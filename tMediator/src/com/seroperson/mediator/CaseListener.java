@@ -1,6 +1,6 @@
 package com.seroperson.mediator;
 
-public interface CasesListener {
+public interface CaseListener {
 
 	public void minimize(Mediator mediator);
 

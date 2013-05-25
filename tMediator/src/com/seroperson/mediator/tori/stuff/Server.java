@@ -71,10 +71,4 @@ public class Server {
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		return new StringBuilder("Description: ").append(desc).append("; Mod: ").append(mod).append("; PlayersCount: ").append(players.length).append("; \n")
-				.append("On host ").append(host).append(':').append(port).toString();
-	}
-
 }

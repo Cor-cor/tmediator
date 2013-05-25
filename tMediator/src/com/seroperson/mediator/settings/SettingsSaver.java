@@ -94,7 +94,7 @@ public class SettingsSaver extends JFrame {
 		add.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				createTextField(" ", innerbox, list);
+				createTextField("", innerbox, list);
 //				scrpane.getVerticalScrollBar().setValue(scrpane.getVerticalScrollBar().getMaximum());
 //				scrpane.revalidate();
 				innerbox.revalidate();

@@ -29,29 +29,29 @@ public class OnlineList extends ScreenAdapter {
 
 	private Player[] inList = new Player[1];
 
-	private final Table windowbuttons;
+	private final Table winbuttons;
 	private final Stage stage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 	private final Skin skin = new Skin(Gdx.files.internal("skin/skin.json"));
 
-	private final Table table;
+	private final Table main;
 
 	private final ObjectMap<String, Label[]> labels = new ObjectMap<String, Label[]>();
-	private ServerViewer siv;
+	private ServerViewer serverviewer;
 
 	private final float speed = 0.5f;
 	private final Mediator game;
 
 	public OnlineList(final Mediator game) {
 		this.game = game;
-		table = new Table();
+		main = new Table();
 
-		windowbuttons = new Table();
-		windowbuttons.setFillParent(true);
-		windowbuttons.top().right();
+		winbuttons = new Table();
+		winbuttons.setFillParent(true);
+		winbuttons.top().right();
 
-		final Button minimizeToTray = new Button(skin);
-		minimizeToTray.add(new Image(Mediator.getRegion("minimize")));
-		minimizeToTray.addListener(new ChangeListener() {
+		final Button toTray = new Button(skin);
+		toTray.add(new Image(Mediator.getRegion("minimize")));
+		toTray.addListener(new ChangeListener() {
 			@Override
 			public void changed(final ChangeEvent event, final Actor actor) {
 				game.minimize(game);
@@ -71,30 +71,30 @@ public class OnlineList extends ScreenAdapter {
 			}
 		});
 
-		windowbuttons.add(minimizeToTray).padTop(5f).padRight(2f);
-		windowbuttons.add(close).padTop(5f).padRight(5f);
-		windowbuttons.addListener(new InputListener() {
+		winbuttons.add(toTray).padTop(5f).padRight(2f);
+		winbuttons.add(close).padTop(5f).padRight(5f);
+		winbuttons.addListener(new InputListener() {
 			@Override
 			public void enter (final InputEvent event, final float x, final float y, final int pointer, final Actor fromActor) {
-				windowbuttons.addAction(Actions.fadeIn(getSpeed()/2));
+				winbuttons.addAction(Actions.fadeIn(getSpeed()/2));
 			}
 			@Override
 			public void exit (final InputEvent event, final float x, final float y, final int pointer, final Actor toActor) {
-				windowbuttons.addAction(Actions.fadeOut(getSpeed()/2));
+				winbuttons.addAction(Actions.fadeOut(getSpeed()/2));
 			}
 
 		});
-		windowbuttons.getColor().a = 0;
+		winbuttons.getColor().a = 0;
 
-		table.padLeft(getSettings().getPadLeft());
-		table.padTop(getSettings().getPadBottom());
-		table.padRight(getSettings().getPadLeft());
-		table.padBottom(getSettings().getPadBottom());
-		table.align(Align.left);
-		table.left();
-		table.top();
+		main.padLeft(getSettings().getPadLeft());
+		main.padTop(getSettings().getPadBottom());
+		main.padRight(getSettings().getPadLeft());
+		main.padBottom(getSettings().getPadBottom());
+		main.align(Align.left);
+		main.left();
+		main.top();
 
-		final ScrollPane scrp = new ScrollPane(table, skin);
+		final ScrollPane scrp = new ScrollPane(main, skin);
 		scrp.setScrollingDisabled(false, false);
 		scrp.setFillParent(true);
 		stage.addActor(scrp);
@@ -102,8 +102,8 @@ public class OnlineList extends ScreenAdapter {
 
 	@Override
 	public synchronized void show() {
-		table.addAction(Actions.fadeIn(speed));
-		stage.addActor(windowbuttons);
+		main.addAction(Actions.fadeIn(speed));
+		stage.addActor(winbuttons);
 		Gdx.input.setInputProcessor(stage);
 	}
 
@@ -127,7 +127,7 @@ public class OnlineList extends ScreenAdapter {
 	}
 
 	public ServerViewer getServerViewer() {
-		return siv;
+		return serverviewer;
 	}
 
 	public synchronized void refresh(final Player[] players) {
@@ -138,8 +138,8 @@ public class OnlineList extends ScreenAdapter {
 		for(final Player player : toList) {
 			int index = -1;
 			int i2 = 0;
-			for(final Player oldp : inList) {
-				if(oldp != null && oldp.equals(player)) {
+			for(final Player playerold : inList) {
+				if(playerold != null && playerold.equals(player)) {
 					index = 1;
 					indexes.put(i, i2);
 					break;
@@ -157,7 +157,7 @@ public class OnlineList extends ScreenAdapter {
 						updateServer(player, getSpeed()/2);
 					break;
 				case -1:
-					addNewPlayer(player, table);
+					addNewPlayer(player, main);
 					break;
 			}
 			i++;
@@ -167,14 +167,14 @@ public class OnlineList extends ScreenAdapter {
 			if(player == null)
 				break;
 			boolean cont = false;
-			for(final Player newplayer : toList) {
-				if(player.equals(newplayer)) {
+			for(final Player playernew : toList) {
+				if(player.equals(playernew)) {
 					cont = true;
 					break;
 				}
 			}
 			if(!cont)
-				removePlayer(player, table);
+				removePlayer(player, main);
 		}
 
 		inList = toList;
@@ -185,11 +185,11 @@ public class OnlineList extends ScreenAdapter {
 	}
 
 	public Table getWindowButtons() {
-		return windowbuttons;
+		return winbuttons;
 	}
 
-	public void setServerViewer(final ServerViewer siv) {
-		this.siv = siv;
+	public void setServerViewer(final ServerViewer serverviewer) {
+		this.serverviewer = serverviewer;
 	}
 
 	private void removePlayer(final Player player, final Table table) {
@@ -237,7 +237,7 @@ public class OnlineList extends ScreenAdapter {
 	}
 
 	private Label updatePlayer(final Player player) {
-		return updateLabel(player, 0, Player.getNameWithClanTag(player), getSpeed());
+		return updateLabel(player, 0, player.getNameWithClanTag(), getSpeed());
 	}
 
 	private Label updateLabel(final Player player, final int index, final String text, final float speed) {
@@ -266,12 +266,12 @@ public class OnlineList extends ScreenAdapter {
 			@Override
 			public boolean touchDown (final InputEvent event, final float x, final float y, final int pointer, final int button) {
 				if(button == Buttons.RIGHT)
-					table.addAction(Actions.run(new Runnable() {
+					main.addAction(Actions.run(new Runnable() {
 						@Override
 						public void run() {
-							if(siv == null)
-								siv = new ServerViewer(ol);
-							siv.add(player.getServer(), player.getServer().getRoom(), true);
+							if(serverviewer == null)
+								serverviewer = new ServerViewer(ol);
+							serverviewer.add(player.getServer(), player.getServer().getRoom(), true);
 						}
 					}));
 				return false;

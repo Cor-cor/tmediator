@@ -13,17 +13,17 @@ import com.seroperson.mediator.rubash.Logotype;
 import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.settings.SettingsLoader;
 
-public class Mediator extends Game implements CasesListener {
+public class Mediator extends Game implements CaseListener {
 
 	private static ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
 	private static Settings settings;
 	private static Texture skinTexture;
-	private final CasesListener ml;
+	private final CaseListener ml;
 	private ShapeRenderer renderer;
 	private final float scale;
 	private final int slw;
 
-	public Mediator(final CasesListener ml, final float scale, final int strokeLineWidth) {
+	public Mediator(final CaseListener ml, final float scale, final int strokeLineWidth) {
 		this.scale = scale;
 		this.ml = ml;
 		slw = strokeLineWidth;
@@ -59,8 +59,8 @@ public class Mediator extends Game implements CasesListener {
 		return settings;
 	}
 
-	public static void setSettings(final Settings settings) {
-		Mediator.settings = settings;
+	public static void setSettings(final Settings s) {
+		settings = s;
 	}
 
 	public static Texture getSkinTexture() {
@@ -76,12 +76,10 @@ public class Mediator extends Game implements CasesListener {
 		getScreen().dispose();
 	}
 
-
 	@Override
 	public void minimize(final Mediator mediator) {
 		ml.minimize(mediator);
 	}
-
 
 	@Override
 	public void handleThrow(final Throwable t) {

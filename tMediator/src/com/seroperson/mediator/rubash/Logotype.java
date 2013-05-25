@@ -17,11 +17,11 @@ public class Logotype extends ScreenAdapter {
 
 	private State state = State.In;
 	private final TextureRegion textureregion;
-	private final Color color = new Color();
 	private final SpriteBatch batch = new SpriteBatch();
+	private final Color color = new Color(batch.getColor());
 	private final float scale;
 	private final float inSpeed = 0.0002f;
-	private final float outSpeed = 0.002f;  // TODO return
+	private final float outSpeed = 0.002f;
 	private float waitTime = 0.5f;
 	private final Vector2 position = new Vector2();
 	private final Mediator mediator;
@@ -29,7 +29,6 @@ public class Logotype extends ScreenAdapter {
 
 	public Logotype(final Settings settings, final Mediator mediator, final Vector2 position, final float scale) {
 		textureregion = new TextureRegion(new Texture(Gdx.files.internal("skin/logotype.png")), 0, 0, 256, 120);
-		color.set(batch.getColor());
 		color.a = 0;
 		batch.setColor(color);
 		this.settings = settings;
@@ -81,11 +80,7 @@ public class Logotype extends ScreenAdapter {
 
 	private enum State {
 
-		In(-1), Wait(0), Out(1);
-
-		State(final int val) {
-
-		}
+		In(), Wait(), Out();
 
 	}
 

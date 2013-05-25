@@ -38,9 +38,9 @@ public class ServerViewer extends JFrame {
 	private final ObjectMap<String, Server> servers = new ObjectMap<String, Server>(10);
 	private final IntMap<String> indexmap = new IntMap<String>(10);
 	private final Box players = Box.createVerticalBox();
-	private JTabbedPane tabbedpane;
-	private JSplitPane jsp;
-	private JScrollPane jsps;
+	private final JTabbedPane tabbedpane;
+	private final JSplitPane jsp;
+	private final JScrollPane jsps;
 
 	public ServerViewer(final OnlineList list) {
 		setTitle(this.getClass().getSimpleName());
@@ -169,7 +169,7 @@ public class ServerViewer extends JFrame {
 
 		for(final Player player : server.getPlayers()) {
 			final Box playerBox = Box.createHorizontalBox();
-			playerBox.add(new JLabel(new StringBuilder("-").append(Player.getNameWithClanTag(player)).toString()));
+			playerBox.add(new JLabel(new StringBuilder("-").append(player.getNameWithClanTag()).toString()));
 			players.add(playerBox);
 		}
 

@@ -22,11 +22,12 @@ import com.seroperson.mediator.tori.stuff.Server;
 
 public class Refresher extends Thread {
 
-	private final String server;
 	private Socket socket;
+	private final String server;
 	private final int port;
 	private final long sleeptime; // 30 sec as default
 	private final OnlineList onlinelist;
+	private final SocketHints sockethints = new SocketHints();
 
 	public Refresher(final Settings settings, final OnlineList list) {
 		setName("Refresher");
@@ -56,7 +57,7 @@ public class Refresher extends Thread {
 	}
 
 	private synchronized String getInformation() throws Throwable {
-		socket = Gdx.net.newClientSocket(Protocol.TCP, server, port, new SocketHints());
+		socket = Gdx.net.newClientSocket(Protocol.TCP, server, port, sockethints);
 		if(socket.isConnected()) {
 			final BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			final StringBuilder builder = new StringBuilder();
@@ -76,28 +77,28 @@ public class Refresher extends Thread {
 		return null;
 	}
 
-	public static Player[] getPlayersOnline(final Server[] servers, final String[] allspecplayers, final String[] clans, final ServerViewer siv, final Player[] lastonlinelist) {
-		final ArrayList<Player> playersonline = new ArrayList<Player>();
-		final ArrayList<String> findedplayers = new ArrayList<String>();
-		List<Server> sivServers = null;
-		List<Server> addedServers = null;
+	public static Player[] getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv, final Player[] lastonlinelist) {
+		final ArrayList<Player> online = new ArrayList<Player>();
+		final ArrayList<String> caught = new ArrayList<String>();
+		List<Server> viewer = null;
+		List<Server> added = null;
 		if(siv != null) {
-			sivServers = siv.getServers();
-			addedServers = new ArrayList<Server>(sivServers.size());
+			viewer = siv.getServers();
+			added = new ArrayList<Server>(viewer.size());
 		}
 
-		for(final String s : allspecplayers)
-			findedplayers.add(s);
+		for(final String s : allplayers)
+			caught.add(s);
 
 		for(final Server server : servers) {
 			if(server == null)
 				continue;
 
 			if(siv != null) {
-				for(final Server sivServer : sivServers) {
-					if(server.getRoom().equalsIgnoreCase(sivServer.getRoom())) {
+				for(final Server viewerServer : viewer) {
+					if(server.equals(viewerServer)) {
 						siv.add(server, server.getRoom(), false);
-						addedServers.add(server);
+						added.add(server);
 						break;
 					}
 				}
@@ -117,32 +118,32 @@ public class Refresher extends Thread {
 							}
 						}
 					if(Continue) {
-						for(final String s : allspecplayers)
+						for(final String s : allplayers)
 							if(s.equalsIgnoreCase(player.getName()))
 								Continue = false;
 					}
 					if(Continue)
 						continue;
-					playersonline.add(player);
-					findedplayers.remove(player.getName());
+					online.add(player);
+					caught.remove(player.getName());
 					continue;
 				}
 
 				Continue = false;
-				switch(handleClan(player, clans, playersonline, findedplayers)) {
+				switch(handleClan(player, clans, online, caught)) {
 					case 0:
-						playersonline.add(player);
+						online.add(player);
 						Continue = true;
 						break;
 					case 2:
 						Continue = true;
 						break;
 					case 3:
-						playersonline.add(player);
+						online.add(player);
 						int i = 0;
-						for(final String s : findedplayers) {
+						for(final String s : caught) {
 							if(s.equalsIgnoreCase(player.getName())) {
-								findedplayers.remove(i);
+								caught.remove(i);
 								break;
 							}
 							i++;
@@ -156,27 +157,26 @@ public class Refresher extends Thread {
 				if(Continue)
 					continue;
 
-				for(int i = 0; i < findedplayers.size(); i++) {
-					final String neededPlayer = findedplayers.get(i);
-					if(player.getName().equalsIgnoreCase(neededPlayer)) {
-						playersonline.add(player);
-						findedplayers.remove(i);
+				for(int i = 0; i < caught.size(); i++) {
+					if(player.getName().equalsIgnoreCase(caught.get(i))) {
+						online.add(player);
+						caught.remove(i);
 					}
 				}
 			}
 		}
 
-		if(sivServers != null) {
+		if(viewer != null) {
 
-			for(final Server server : sivServers)
-				addedServers.remove(server);
+			for(final Server server : viewer)
+				added.remove(server);
 
-			for(final Server server : addedServers)
+			for(final Server server : added)
 				siv.add(null, server.getRoom(), false);
 
 		}
 
-		return playersonline.toArray(new Player[playersonline.size()]);
+		return online.toArray(new Player[online.size()]);
 	}
 
 	/** -1 none

@@ -60,13 +60,13 @@ public class Player {
 		return true;
 	}
 
-	public static String getNameWithClanTag(final Player player) {
+	public String getNameWithClanTag() {
 		final StringBuilder pl = new StringBuilder();
 
-		if(player.getClan().equals(Parser.CNONE))
-			pl.append(player.getName().trim());
+		if(getClan().equals(Parser.CNONE))
+			pl.append(getName());
 		else
-			pl.append("[").append(player.getClan().trim()).append("]").append(player.getName());
+			pl.append("[").append(getClan()).append("]").append(getName());
 
 		return pl.toString();
 	}

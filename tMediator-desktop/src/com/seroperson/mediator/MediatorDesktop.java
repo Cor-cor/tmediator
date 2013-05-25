@@ -23,7 +23,6 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
@@ -49,7 +48,7 @@ public class MediatorDesktop extends JFrame {
         else
         	tray = null;
 		
-		mediator = new com.seroperson.mediator.Mediator(new CasesListener() {
+		mediator = new com.seroperson.mediator.Mediator(new CaseListener() {
 			@Override
 			public void minimize(Mediator m) {
 				setExtendedState(Frame.ICONIFIED);
@@ -68,7 +67,6 @@ public class MediatorDesktop extends JFrame {
 		}
 	    setExtendedState(Frame.NORMAL);
 	    setUndecorated(true);
-	    // MediatorProxy.newInstance(new com.seroperson.mediator.Mediator(this, scale, strokeLineWidth), ApplicationListener.class)
 	    
 	    Container c = getContentPane();
 		LwjglAWTCanvas canvas = new LwjglAWTCanvas(mediator, false);
@@ -152,68 +150,7 @@ public class MediatorDesktop extends JFrame {
 					setAlwaysOnTop(true);
 			}	
         });
-        
-        /*final MenuItem about = new MenuItem("About");
-        about.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					new JFrame() { 
-						private static final long serialVersionUID = 1L;
-								
-						private void open(URI uri) {
-						    if (Desktop.isDesktopSupported()) {
-						      try {
-						        Desktop.getDesktop().browse(uri);
-						      } catch (IOException e) {   }
-						    } else { }
-						  }
-						
-						private JButton createLink(final String text, final URI uri) { 
-							JButton button = new JButton();
-							button.setText(text);
-							button.setHorizontalAlignment(SwingConstants.LEFT);
-							button.setBorderPainted(false);
-							button.setOpaque(false);
-							button.setBackground(Color.WHITE);
-							button.setToolTipText(uri.toString());
-							button.addActionListener(new ActionListener() { 
-								@Override
-								public void actionPerformed(ActionEvent e) {
-							        open(uri);
-							      }
-							});
-							return button;
-						}
-						
-						{
-							setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-							setTitle("About");
-							
-							Container c = getContentPane();
-							c.setLayout(new GridBagLayout());
-							c.add(new JLabel("tMediator"));
-							c.add(new JLabel("Version 0.1"));
-							c.add(new JLabel("Java version 1.6"));
-							c.add(new JLabel("Based on "));
-							c.add(createLink("libgdx", new URI("http://code.google.com/p/libgdx/")));
-							c.add(createLink("<HTML>Visit author <FONT color=\"#000099\"><U>page</U></FONT></HTML>", new URI("http://vk.com/sero_person")));
-							c.add(createLink("rubash", new URI("http://forum.toribash.com/forumdisplay.php?f=446")));
-							setVisible(true);
-							setResizable(false);
-							pack();
-						} 
-					};
-				} catch (HeadlessException e1) {
-					e1.printStackTrace();
-				} catch (URISyntaxException e1) {
-					e1.printStackTrace();
-				}
-			} 
-        	
-        });*/
-                
+                       
         final MenuItem exit = new MenuItem("Exit");
         exit.addActionListener(new ActionListener() {
             @Override
@@ -226,7 +163,6 @@ public class MediatorDesktop extends JFrame {
         popup.add(settings);
         if(isAlwaysOnTopSupported())
         	popup.add(ontop);
-//      popup.add(about);
         popup.add(exit);
         
         TrayIcon trayIcon = new TrayIcon(image, title, popup);
