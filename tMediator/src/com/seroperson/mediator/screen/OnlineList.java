@@ -224,7 +224,7 @@ public class OnlineList extends ScreenAdapter {
 		int i = 0;
 		
 		animation = !Mediator.isMinimized();
-		
+
 		for(final Player player : toList) {
 			int index = -1;
 			int i2 = 0;
@@ -298,7 +298,7 @@ public class OnlineList extends ScreenAdapter {
 			if(!cont)
 				removePlayer(player, main);
 		}
-		
+
 		animation = false;
 		
 		inList = toList;
@@ -337,8 +337,11 @@ public class OnlineList extends ScreenAdapter {
 		for(int i = 0; i < remLabels.length; i++) {
 			
 			final SelectableLabel toremove = remLabels[i];
-			if(toremove == null)
+			
+			if(toremove == null) {
 				continue;
+			}
+			
 			Runnable runnable = new Runnable() {
 
 				@Override
@@ -351,13 +354,13 @@ public class OnlineList extends ScreenAdapter {
 					table.invalidate();
 				}
 			};
-			if(animation)
+			if(!animation)
 				runnable.run();
 			else
 				toremove.addAction(Actions.sequence(Actions.fadeOut(getSpeed()), Actions.run(runnable)));
 		}
 		final Values<SelectableLabel[]> values = labels.values();
-		if(animation)
+		if(animation) {
 			while(values.hasNext) {
 				final SelectableLabel[] label = values.next();
 				if(label[0].getY() < remLabels[0].getY())
@@ -366,6 +369,7 @@ public class OnlineList extends ScreenAdapter {
 						upordown.addAction(Actions.moveBy(0, upordown.getHeight(), getSpeed()));
 					}
 			}
+		}
 	}
 
 	private void addNewPlayer(final Player player, final Table table) {

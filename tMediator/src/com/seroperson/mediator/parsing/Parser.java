@@ -29,7 +29,6 @@ public class Parser {
 	private final static String TORIBASH = "TORIBASH";
 	private final static String REGEXP_SERVER = "(\\d{1,3}\\.+\\d{1,3}+\\.+\\d{1,3}+\\.+\\d{1,3}):(\\d{1,}).([A-Za-z0-9]+)";
 	private final static String REGEXP_CLIENT = "[^\\s]+([a-zA-Z0-9]{1,30})";
-	private final static String REGEXP_CLAN = "[^a-zA-Z0-9]+"; // FIXME arr size = 3
 	public final static String CNONE = "none";
 
 	public static Server[] getServers(final ThrowHandler th, final String npservers) {
@@ -120,9 +119,10 @@ public class Parser {
 						String withoutclantag = null;
 						String clantag = null;
 						if(withclantag.contains("[")) { // or "]"
-							final String[] splitted = withclantag.split(REGEXP_CLAN);
-							clantag = splitted[1];
-							withoutclantag = splitted[2];
+							int oppos = withclantag.indexOf('[');
+							int clpos = withclantag.indexOf(']');
+							clantag = withclantag.substring(oppos+1, clpos);
+							withoutclantag =  withclantag.substring(clpos+1);
 						}
 						else {
 							clantag = CNONE;
