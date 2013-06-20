@@ -9,20 +9,22 @@ import java.io.IOException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
+import com.seroperson.mediator.utils.ThrowHandler;
 
 public class SettingsLoader {
 
-	public static Settings getSettings() {
-		final File settingsfile = getSettingsFile();
+	public static Settings getSettings(final ThrowHandler th) {
 		try {
+			final File settingsfile = getSettingsFile();
 			return readSettingsFromFile(settingsfile);
-		} catch (final IOException e) {
-			e.printStackTrace();
+		}
+		catch (final IOException e) {
+			th.handleThrow(e);
 		}
 		return null;
 	}
 
-	public static File getSettingsFile() {
+	public static File getSettingsFile() throws IOException {
 		final FileHandle directory = Gdx.files.external("tmediator");
 		if(!directory.exists()) {
 			directory.mkdirs();
@@ -30,12 +32,8 @@ public class SettingsLoader {
 		final FileHandle settings = Gdx.files.external("tmediator/settings.dat");
 		final File settingsfile = settings.file();
 		if(!settings.exists()) {
-			try {
-				settingsfile.createNewFile();
-				writeSettingsToFile(Settings.getDefaultSettings(), settingsfile);
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
+			settingsfile.createNewFile();
+			writeSettingsToFile(Settings.getDefaultSettings(), settingsfile);
 		}
 		return settingsfile;
 	}
@@ -43,26 +41,34 @@ public class SettingsLoader {
 	public static Settings readSettingsFromFile(final File file) throws IOException {
 		final BufferedReader br = new BufferedReader(new FileReader(file));
 		final StringBuilder str = new StringBuilder();
-		while(true) {
-			final String string = br.readLine();
-			if(string == null)
-				break;
-			str.append(string);
+		try {
+			while(true) {
+				final String string = br.readLine();
+				if(string == null)
+					break;
+				str.append(string);
+			}
 		}
-		br.close();
+		finally {
+			br.close();
+		}
 		return new Json().fromJson(Settings.class, str.toString());
 	}
 
 	public static void writeSettingsToFile(final Settings settings, final File file) throws IOException {
 		FileWriter w = null;
-		if(file.canWrite()) {
-			final Json json = new Json();
-			w = new FileWriter(file);
-			w.write(json.toJson(settings));
+		try {
+			if(file.canWrite()) {
+				final Json json = new Json();
+				w = new FileWriter(file);
+				w.write(json.toJson(settings));
+			}
 		}
-		if(w != null) {
-			w.flush();
-			w.close();
+		finally {
+			if(w != null) {
+				w.flush();
+				w.close();
+			}
 		}
 	}
 

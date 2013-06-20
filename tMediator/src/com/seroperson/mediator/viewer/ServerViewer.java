@@ -1,4 +1,4 @@
-package com.seroperson.mediator;
+package com.seroperson.mediator.viewer;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -45,14 +45,14 @@ public class ServerViewer extends JFrame {
 	public ServerViewer(final OnlineList list) {
 		setTitle(this.getClass().getSimpleName());
 		this.list = list;
-		final String[][] str = new String[][] { new String[] { "Desc: ", "Room: ", /*"Mod: ", "Max Players: ",*/ "Adress: " }, new String[] { "desc", "room", /*"mod", "maxplayers",*/ "adress" } };
+		final String[][] str = new String[][] { new String[] { "Desc: ", "Room: ", "Adress: " }, new String[] { "desc", "room", "adress" } };
 		final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setVisible(true);
 		setResizable(false);
-		setLocation(d.width/2, d.height/2);
-		setSize(360/2, 480/2);
+		setLocation(d.width / 2, d.height / 2);
+		setSize(480 / 2, 480 / 2);
 		addWindowListener(getWindowListener());
 
 		final Container c = getContentPane();
@@ -72,6 +72,7 @@ public class ServerViewer extends JFrame {
 		tabbedpane = new JTabbedPane();
 		tabbedpane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedpane.addChangeListener(new ChangeListener() {
+
 			@Override
 			public void stateChanged(final ChangeEvent e) {
 				if(indexmap.containsKey(tabbedpane.getSelectedIndex()))
@@ -89,6 +90,7 @@ public class ServerViewer extends JFrame {
 
 		final JButton close = new JButton("Close");
 		close.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				if(tabbedpane.getTabCount() <= 1) {
@@ -134,7 +136,7 @@ public class ServerViewer extends JFrame {
 			indexmap.put(indexmap.size, room);
 			servers.put(room, server);
 			tabbedpane.addTab(room, null);
-			index = indexmap.size-1;
+			index = indexmap.size - 1;
 		}
 		if(open)
 			tabbedpane.setSelectedIndex(index);
@@ -179,10 +181,11 @@ public class ServerViewer extends JFrame {
 
 	private WindowAdapter getWindowListener() {
 		return new WindowAdapter() {
-		    @Override
+
+			@Override
 			public void windowClosed(final WindowEvent e) {
-		    	list.setServerViewer(null);
-		    }
+				list.setServerViewer(null);
+			}
 		};
 	}
 

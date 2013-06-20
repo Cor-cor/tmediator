@@ -4,12 +4,12 @@ public class Server {
 
 	private final String desc;
 	private final String room;
-	private final String mod;
+	private final String mod; // TODO todo
 	private final Player[] players;
 	private final String host;
 	private final int port;
 
-	public Server(final String desc, final String room,  final String mod, final Player[] players, final String host, final int port) {
+	public Server(final String desc, final String room, final String mod, final Player[] players, final String host, final int port) {
 		this.desc = desc;
 		this.room = room;
 		this.mod = mod;
@@ -56,17 +56,18 @@ public class Server {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
+		if(this == obj)
 			return true;
-		if (obj == null)
+		if(obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if(getClass() != obj.getClass())
 			return false;
 		final Server other = (Server) obj;
-		if (room == null) {
-			if (other.room != null)
+		if(room == null) {
+			if(other.room != null)
 				return false;
-		} else if (!room.equalsIgnoreCase(other.room))
+		}
+		else if(!room.equalsIgnoreCase(other.room))
 			return false;
 		return true;
 	}

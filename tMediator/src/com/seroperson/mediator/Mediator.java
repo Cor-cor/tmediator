@@ -1,57 +1,60 @@
 package com.seroperson.mediator;
 
+import java.util.Timer;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.seroperson.mediator.rubash.Logotype;
 import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.settings.SettingsLoader;
+import com.seroperson.mediator.tori.stuff.Global;
+import com.seroperson.mediator.tori.stuff.Player;
+import com.seroperson.mediator.tori.stuff.Server;
+import com.seroperson.mediator.utils.CaseListener;
+import com.seroperson.mediator.utils.ThrowHandler;
 
-public class Mediator extends Game implements CaseListener {
+public class Mediator extends Game implements CaseListener, ThrowHandler {
+
+	// TODO (!) rewrite without libgdx
 
 	private static ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
 	private static Settings settings;
 	private static Texture skinTexture;
-	private final CaseListener ml;
-	private ShapeRenderer renderer;
+	private static volatile boolean minimized = false;
+	private final Timer timer;
 	private final float scale;
-	private final int slw;
+	private Server[] servers;
+	private Global[] globals = new Global[5];
 
-	public Mediator(final CaseListener ml, final float scale, final int strokeLineWidth) {
-		this.scale = scale;
-		this.ml = ml;
-		slw = strokeLineWidth;
+	public Mediator(final float sc) {
+		scale = sc;
+		timer = new Timer("Timer", true);
 	}
 
 	@Override
 	public void create() {
-		if(Gdx.files.isExternalStorageAvailable())
-			settings = SettingsLoader.getSettings();
+
+		settings = SettingsLoader.getSettings(this);
 
 		skinTexture = new Texture(Gdx.files.internal("skin/skin.png"));
 		buttons.put("minimize", new TextureRegion(Mediator.getSkinTexture(), 0, 0, 15, 15));
 		buttons.put("close", new TextureRegion(Mediator.getSkinTexture(), 17, 0, 15, 15));
 		buttons.put("back", new TextureRegion(Mediator.getSkinTexture(), 34, 0, 15, 15));
-
-		renderer = new ShapeRenderer();
-		renderer.setColor(0, 0, 0, 1);
-		setScreen(new Logotype(settings, this, new Vector2(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2), scale));
+		
+		Gdx.graphics.setVSync(false);
+		
+		setScreen(new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), scale));
 	}
 
 	@Override
 	public void render() {
 		Gdx.gl10.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		Gdx.gl10.glClearColor(1f, 1f, 1f, 1f);
-		Gdx.gl10.glLineWidth(slw);
-		renderer.begin(ShapeType.Line);
-		renderer.rect(slw/2, -slw, Gdx.graphics.getWidth()-slw, Gdx.graphics.getHeight()+slw/2);
-		renderer.end();
+		Gdx.gl10.glClearColor(.9f, .9f, .9f, 1f);
 		super.render();
 	}
 
@@ -71,19 +74,96 @@ public class Mediator extends Game implements CaseListener {
 		return buttons.get(name);
 	}
 
+	public static boolean isMinimized() {
+		return minimized;
+	}
+
+	public static Server getServerByRoom(final String room, final Server[] servers) {
+		for(final Server s : servers)
+			if(room.equalsIgnoreCase(s.getRoom()))
+				return s;
+		return null;
+	}
+
+	public Global[] getGlobals() {
+		return globals;
+	}
+
+	public void addGlobal(final Global g) {
+		final int index = getLastGlobalIndex();
+
+		if(index == globals.length - 1) {	// TODO remade ?
+			final Global[] bigger = new Global[globals.length + 5];
+			System.arraycopy(globals, 0, bigger, 0, globals.length);
+			bigger[globals.length] = g;
+			globals = bigger;
+		}
+		else
+			globals[index + 1] = g; 
+
+		handleGlobal(g);
+	}
+
+	public int getLastGlobalIndex() {
+		int index = 0;
+		for(final Global g : globals) {
+			if(g == null)
+				return index - 1;
+			index++;
+		}
+		return globals.length - 1;
+	}
+
+	public Global getLastGlobal() {
+		final int index = getLastGlobalIndex();
+		if(index < 0)
+			return null;
+		return globals[index];
+	}
+
+	public Server[] getServers() {
+		return servers;
+	}
+
+	public void setServers(final Server[] servers) {
+		this.servers = servers;
+	}
+
+	public Player getPlayer(final String name) {
+		for(final Server server : servers) {
+			for(final Player player : server.getPlayers()) {
+				if(player.getName().equalsIgnoreCase(name))
+					return player;
+			}
+		}
+		return null;
+	}
+
+	public Timer getTimer() {
+		return timer;
+	}
+
 	@Override
 	public void dispose() {
 		getScreen().dispose();
 	}
 
 	@Override
-	public void minimize(final Mediator mediator) {
-		ml.minimize(mediator);
+	public void unMinimize() {
+		minimized = false;
+	}
+
+	@Override
+	public void minimize() {
+		minimized = true;
 	}
 
 	@Override
 	public void handleThrow(final Throwable t) {
-		ml.handleThrow(t);
+	}
+
+	@Override
+	public void handleGlobal(final Global g) {
 	}
 
 }
