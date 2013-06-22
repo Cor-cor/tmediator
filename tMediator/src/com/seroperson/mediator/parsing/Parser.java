@@ -29,6 +29,8 @@ public class Parser {
 	private final static String TORIBASH = "TORIBASH";
 	private final static String REGEXP_SERVER = "([\\d{1,3}\\.]+):(\\d{1,})\\s(\\p{ASCII}+)";
 	private final static String REGEXP_CLIENT = "[^\\s]+([a-zA-Z0-9]{1,30})";
+	private final static String REGEXP_MOD = "[a-zA-Z0-9-_\\.]+\\.tbm";
+	private final static String REGEXP_COLORS = "\\^\\d{2}+";
 	public final static String CNONE = "none";
 
 	public static Server[] getServers(final ThrowHandler th, final String npservers) {
@@ -96,7 +98,7 @@ public class Parser {
 				boolean descnull = false;
 				String desc = null;
 				String room;
-				final String mod = null;
+				String mod;
 				List<Player> players;
 				String host;
 				int port;
@@ -138,7 +140,14 @@ public class Parser {
 
 				currentStr = st.nextToken();
 				NEWGAME: {
-
+					if(currentStr.contains("classic")) {
+						mod = "classic";
+						break NEWGAME;
+					}
+					final Pattern pattern = Pattern.compile(REGEXP_MOD);
+					final Matcher matcher = pattern.matcher(currentStr);
+					matcher.find();
+					mod = matcher.group().trim();
 				}
 				/* TODO handle NEWGAME (?) */
 				if(st.hasMoreTokens())
@@ -152,7 +161,7 @@ public class Parser {
 					final String[] arr = currentStr.split(";");
 					if(arr.length < 1)
 						break Main;
-					desc = arr[arr.length-1].trim();
+					desc = arr[arr.length-1].trim().replaceAll(REGEXP_COLORS, "");
 				}
 
 				final Server server = new Server(desc, room, mod, players.toArray(new Player[players.size()]), host, port);
