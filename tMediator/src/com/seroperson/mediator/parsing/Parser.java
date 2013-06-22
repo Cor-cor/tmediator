@@ -140,7 +140,7 @@ public class Parser {
 
 				currentStr = st.nextToken();
 				NEWGAME: {
-					if(currentStr.contains("classic")) {
+					if(currentStr.contains(" classic ")) {
 						mod = "classic";
 						break NEWGAME;
 					}
