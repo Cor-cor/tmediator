@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Scanner;
 import java.util.TimerTask;
 
@@ -108,11 +109,11 @@ public class Refresher extends TimerTask {
 	}
 
 	public static Player[] getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv, final Player[] lastonlinelist) {
-		final Collection<Player> online = new ArrayList<Player>();
-		final Collection<String> caught = new ArrayList<String>(); // TODO hashset everywhere?
+		final List<Player> online = new ArrayList<Player>();
+		final List<String> caught = new ArrayList<String>(); // TODO hashset everywhere?
 
-		Collection<Server> viewer = null;
-		Collection<Server> added = null;
+		List<Server> viewer = null;
+		List<Server> added = null;
 		if(siv != null) {
 			viewer = siv.getServers();
 			added = new ArrayList<Server>(viewer.size());
@@ -127,7 +128,7 @@ public class Refresher extends TimerTask {
 
 			if(siv != null) {
 				for(final Server viewerServer : viewer) {
-					if(server.equals(viewerServer)) {
+					if(server.getRoom().equalsIgnoreCase(viewerServer.getRoom())) {
 						siv.add(server, server.getRoom(), false);
 						added.add(server);
 						break;
@@ -136,44 +137,31 @@ public class Refresher extends TimerTask {
 			}
 
 			for(final Player player : server.getPlayers()) {
-				boolean Continue = true;
-				final Player mo = getPlayerByName(player.getName(), lastonlinelist);
-				final String str = mo == null ? null : mo.getName();
-				if(str != null) {
-					if(!player.getClan().equals(Parser.CNONE))
-						for(final String s : clans) {
-							if(s.equalsIgnoreCase(player.getClan())) {
-								Continue = false;
-								break;
-							}
-						}
-					if(Continue) {
-						for(final String s : allplayers)
-							if(s.equalsIgnoreCase(player.getName()))
-								Continue = false;
-					}
-					if(Continue)
-						continue;
-					online.add(player);
-					caught.remove(player.getName());
-					continue;
-				}
 				switch(handle(player, clans, online, caught)) {
 					case 0:
-					case 3:
-						online.add(player);
+						case 3:
+							online.add(player);
 				}
 			}
 		}
 
-		if(viewer != null) {
-
+		if(siv != null) {
+			for(final Server server : added) {
+				int i = 0;
+				for(Server vserver : viewer) {
+					if(vserver.getRoom().equalsIgnoreCase(server.getRoom())) {
+						viewer.remove(i);
+						break;
+					}
+					i++;
+				}
+			}
+			
 			for(final Server server : viewer)
-				added.remove(server);
-
-			for(final Server server : added)
 				siv.add(null, server.getRoom(), false);
 
+			siv.update();
+			
 		}
 
 		return online.toArray(new Player[online.size()]);
@@ -203,14 +191,6 @@ public class Refresher extends TimerTask {
 			if(clan.equalsIgnoreCase(p.getClan()))
 				return 0;
 		return 1;
-	}
-
-	private static Player getPlayerByName(final String str, final Player[] lastonlinelist) {
-		for(final Player element : lastonlinelist)
-			if(element != null)
-				if(element.getName().equalsIgnoreCase(str))
-					return element;
-		return null;
 	}
 
 }

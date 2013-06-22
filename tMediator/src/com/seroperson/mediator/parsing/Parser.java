@@ -27,7 +27,7 @@ public class Parser {
 
 	private final static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	private final static String TORIBASH = "TORIBASH";
-	private final static String REGEXP_SERVER = "(\\d{1,3}\\.+\\d{1,3}+\\.+\\d{1,3}+\\.+\\d{1,3}):(\\d{1,}).([A-Za-z0-9]+)";
+	private final static String REGEXP_SERVER = "([\\d{1,3}\\.]+):(\\d{1,})\\s(\\p{ASCII}+)";
 	private final static String REGEXP_CLIENT = "[^\\s]+([a-zA-Z0-9]{1,30})";
 	public final static String CNONE = "none";
 
@@ -86,10 +86,13 @@ public class Parser {
 	@SuppressWarnings("unused")
 	private static Object[] handleString(final String fullStr, final StringTokenizer st, final boolean prevdescisnull) throws ParseException {
 		String currentStr = null;
+		
 		{
 			if(!prevdescisnull)
 				currentStr = st.nextToken();
-			if(prevdescisnull || currentStr.startsWith(TORIBASH)) {
+			Main: {
+				if(!(prevdescisnull || currentStr.startsWith(TORIBASH)))
+					break Main;
 				boolean descnull = false;
 				String desc = null;
 				String room;
@@ -104,9 +107,9 @@ public class Parser {
 					final Pattern pattern = Pattern.compile(REGEXP_SERVER);
 					final Matcher matcher = pattern.matcher(currentStr);
 					matcher.find();
-					host = matcher.group(1);
-					port = Integer.valueOf(matcher.group(2));
-					room = matcher.group(3);
+					host = matcher.group(1).trim();
+					port = Integer.valueOf(matcher.group(2).trim());
+					room = matcher.group(3).trim();
 				}
 
 				currentStr = st.nextToken();
@@ -120,7 +123,7 @@ public class Parser {
 						String clantag = null;
 						if(withclantag.contains("[")) { // or "]"
 							int oppos = withclantag.indexOf('[');
-							int clpos = withclantag.indexOf(']');
+							int clpos = withclantag.indexOf(']'); // TODO as regex
 							clantag = withclantag.substring(oppos+1, clpos);
 							withoutclantag =  withclantag.substring(clpos+1);
 						}
@@ -142,12 +145,14 @@ public class Parser {
 					currentStr = st.nextToken();
 
 				DESC: {
-					if(currentStr.matches(TORIBASH)) {
+					if(currentStr.startsWith(TORIBASH)) {
 						descnull = true;
 						break DESC; // yea, desc can be null -.-
 					}
 					final String[] arr = currentStr.split(";");
-					desc = arr[1].trim();
+					if(arr.length < 1)
+						break Main;
+					desc = arr[arr.length-1].trim();
 				}
 
 				final Server server = new Server(desc, room, mod, players.toArray(new Player[players.size()]), host, port);
@@ -155,9 +160,9 @@ public class Parser {
 					p.setServer(server);
 				return new Object[] { server, new Boolean(descnull) };
 			}
-			else {
-				throw new ParseException(new StringBuilder("Parse error; \n").append(currentStr).toString(), fullStr.indexOf(currentStr));
-			}
+			
+			throw new ParseException(new StringBuilder("Parse error; \n").append(currentStr).toString(), fullStr.indexOf(currentStr));
+			
 		}
 	}
 

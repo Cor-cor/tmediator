@@ -90,9 +90,10 @@ public class GlobalsViewer extends JFrame {
 		c.add(scroll, BorderLayout.CENTER);
 	}
 
-	public class AnotherColor extends DefaultTableCellRenderer.UIResource {
+	public static class AnotherColor extends DefaultTableCellRenderer.UIResource {
 
-		private final Color gray = new Color(0.7f, 0.7f, 0.7f, 0.2f);
+		private static final Color gray = new Color(0.7f, 0.7f, 0.7f, 0.2f);
+		private static final Color white = Color.white;
 		private Font fontMod;
 
 		{
@@ -120,7 +121,7 @@ public class GlobalsViewer extends JFrame {
 				if(row % 2 == 0)
 					setBackground(gray);
 				else
-					setBackground((Color) value);
+					setBackground(white);
 
 			return this;
 		}

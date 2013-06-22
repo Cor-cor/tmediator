@@ -142,6 +142,10 @@ public class ServerViewer extends JFrame {
 			tabbedpane.setSelectedIndex(index);
 	}
 
+	public void update() { 
+		update(tabbedpane.getSelectedIndex());
+	}
+	
 	private void update(final int index) {
 		update(indexmap.get(index), index);
 	}

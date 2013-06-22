@@ -229,7 +229,7 @@ public class OnlineList extends ScreenAdapter {
 			int index = -1;
 			int i2 = 0;
 			for(final Player playerold : inList) {
-				if(playerold != null && playerold.equals(player)) {
+				if(playerold != null && playerold.getName().equalsIgnoreCase(player.getName())) {
 					index = 1;
 					indexes.put(i, i2);
 					break;
@@ -237,7 +237,7 @@ public class OnlineList extends ScreenAdapter {
 				i2++;
 			}
 			cases[i++] = index;
-			if(index == -1 && !animation)
+			if(index == -1 && Mediator.getSettings().isMinimizeAction())
 				animation = true;
 		}
 		i = 0;
@@ -245,7 +245,7 @@ public class OnlineList extends ScreenAdapter {
 			final Player player = toList[i];
 			switch(index) {
 				case 1:
-					if(!player.getServer().equals(inList[indexes.get(i)].getServer()))
+					if(!player.getServer().getRoom().equalsIgnoreCase(inList[indexes.get(i)].getServer().getRoom()))
 						updateServer(player, getSpeed() / 2);
 					break;
 				case -1:
@@ -290,7 +290,7 @@ public class OnlineList extends ScreenAdapter {
 				break;
 			boolean cont = false;
 			for(final Player playernew : toList) {
-				if(player.equals(playernew)) {
+				if(player.getName().equalsIgnoreCase(playernew.getName())) {
 					cont = true;
 					break;
 				}
@@ -354,6 +354,7 @@ public class OnlineList extends ScreenAdapter {
 					table.invalidate();
 				}
 			};
+			
 			if(!animation)
 				runnable.run();
 			else
@@ -397,8 +398,13 @@ public class OnlineList extends ScreenAdapter {
 
 		if(!labels.containsKey(player.getName())) {
 			field = new SelectableLabel("", skin);
-			field.setColor(Color.GREEN);
-			field.getColor().g = 0.7f;
+			if(animation) {
+				field.setColor(Color.GREEN);
+				field.getColor().g = 0.7f;
+				colored.add(field);
+			}
+			else
+				field.setColor(Color.BLACK);
 		}
 		else
 			field = labels.get(player.getName())[index];
@@ -412,9 +418,9 @@ public class OnlineList extends ScreenAdapter {
 			@Override
 			public void run() {
 				field.setText(text);
-				colored.add(field);
 			}
 		};
+		
 		if(animation)
 			field.addAction(Actions.sequence(Actions.fadeOut(getSpeed()), Actions.run(runnable), Actions.fadeIn(getSpeed())));
 		else
