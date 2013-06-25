@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.TimerTask;
@@ -42,6 +43,7 @@ public class Refresher extends TimerTask {
 			onlinelist.refresh(getPlayersOnline(mediator.getServers(), getSettings().getNames(), getSettings().getClans(), onlinelist.getServerViewer(), onlinelist.getPlayersInList()));
 			
 			Globals: {
+				
 				if(!getSettings().isGlobalsTracking())
 					break Globals;
 				final Global current = getGlobal(getNPGlobal());
@@ -110,10 +112,10 @@ public class Refresher extends TimerTask {
 
 	public static Player[] getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv, final Player[] lastonlinelist) {
 		final List<Player> online = new ArrayList<Player>();
-		final List<String> caught = new ArrayList<String>(); // TODO hashset everywhere?
+		final Collection<String> caught = new ArrayList<String>(); 
 
-		List<Server> viewer = null;
-		List<Server> added = null;
+		Collection<Server> viewer = null;
+		Collection<Server> added = null;
 		if(siv != null) {
 			viewer = siv.getServers();
 			added = new ArrayList<Server>(viewer.size());
@@ -127,12 +129,9 @@ public class Refresher extends TimerTask {
 				continue;
 
 			if(siv != null) {
-				for(final Server viewerServer : viewer) {
-					if(server.getRoom().equalsIgnoreCase(viewerServer.getRoom())) {
-						siv.add(server, server.getRoom(), false);
-						added.add(server);
-						break;
-					}
+				if(viewer.contains(server)) { 
+					siv.add(server, server.getRoom(), false);
+					added.add(server);
 				}
 			}
 
@@ -146,16 +145,8 @@ public class Refresher extends TimerTask {
 		}
 
 		if(siv != null) {
-			for(final Server server : added) {
-				int i = 0;
-				for(Server vserver : viewer) {
-					if(vserver.getRoom().equalsIgnoreCase(server.getRoom())) {
-						viewer.remove(i);
-						break;
-					}
-					i++;
-				}
-			}
+			
+			viewer.removeAll(added);
 			
 			for(final Server server : viewer)
 				siv.add(null, server.getRoom(), false);
@@ -164,6 +155,8 @@ public class Refresher extends TimerTask {
 			
 		}
 
+		Collections.sort(online);
+		
 		return online.toArray(new Player[online.size()]);
 	}
 
@@ -175,14 +168,8 @@ public class Refresher extends TimerTask {
 	 * 3 - wanted
 	 */
 	private static int handle(final Player p, final String[] clans, final Collection<Player> alreadyChecked, final Collection<String> wanted) {
-		int i = 0;
-		for(final String s : wanted) {
-			if(s.equalsIgnoreCase(p.getName())) {
-				wanted.remove(i);
-				return 3;
-			}
-			i++;
-		}
+		if(wanted.contains(p))
+			return 3;
 		if(alreadyChecked.contains(p))
 			return 2;
 		if(p.getClan().equals(Parser.CNONE))

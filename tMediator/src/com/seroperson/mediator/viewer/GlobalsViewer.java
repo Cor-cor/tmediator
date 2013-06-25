@@ -153,7 +153,7 @@ public class GlobalsViewer extends JFrame {
 				o[0] = g.getMessage();
 				o[1] = g.getPlayer();
 				o[2] = g.getServer();
-				o[3] = sdf.format(g.getDate());
+				o[3] = sdf.format(g.getDate()); // TODO ... minutes ago
 			}
 
 		}

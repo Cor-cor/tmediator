@@ -45,7 +45,6 @@ public class SettingsSaver extends JFrame {
 		setTitle("Settings");
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setVisible(true);
-		setResizable(false);
 		setSize(w, h);
 		setLocation(d.width / 2 - getSize().width / 2, d.height / 2 - getSize().height / 2);
 

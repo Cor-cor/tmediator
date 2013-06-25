@@ -28,8 +28,8 @@ public class Parser {
 	private final static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	private final static String TORIBASH = "TORIBASH";
 	private final static String REGEXP_SERVER = "([\\d{1,3}\\.]+):(\\d{1,})\\s(\\p{ASCII}+)";
-	private final static String REGEXP_CLIENT = "[^\\s]+([a-zA-Z0-9]{1,30})";
-	private final static String REGEXP_MOD = "[a-zA-Z0-9-_\\.]+\\.tbm";
+	private final static String REGEXP_CLIENT = "[^\\s]+([a-zA-Z0-9\\-]{1,30})"; // TODO ...
+	private final static String REGEXP_MOD = "[a-zA-Z0-9-_\\.\\!\\?$#@\\(\\)]+\\.tbm"; // TODO ...
 	private final static String REGEXP_COLORS = "\\^\\d{2}+";
 	public final static String CNONE = "none";
 

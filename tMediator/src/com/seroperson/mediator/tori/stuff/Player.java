@@ -2,7 +2,7 @@ package com.seroperson.mediator.tori.stuff;
 
 import com.seroperson.mediator.parsing.Parser;
 
-public class Player {
+public class Player implements Comparable<Player> {
 
 	private final String name;
 	private final String clan;
@@ -46,4 +46,28 @@ public class Player {
 		return pl.toString();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+		Player other = (Player) obj;
+		if(name == null) {
+			if(other.name != null)
+				return false;
+		}
+		else if(!name.equalsIgnoreCase(other.name))
+			return false;
+		return true;
+	}
+
+	
+	@Override
+	public int compareTo(Player o) {
+		return clan.compareToIgnoreCase(o.getClan());
+	}
+	
 }

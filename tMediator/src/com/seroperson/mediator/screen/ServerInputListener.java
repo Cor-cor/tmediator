@@ -33,19 +33,20 @@ public class ServerInputListener extends InputListener {
 	public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 		if(button == Buttons.MIDDLE)
 			runnable.run();
-		else if(button == Buttons.LEFT) { 
-			if(System.currentTimeMillis() - counter > 1000) {
-				counter = 0;
-				click = 0;
-				counter = System.currentTimeMillis();
+		else
+			if(button == Buttons.LEFT) { 
+				if(System.currentTimeMillis() - counter > 1000) {
+					counter = 0;
+					click = 0;
+					counter = System.currentTimeMillis();
+				}
+				else
+					click++;
+				if(click >= 1) {
+					runnable.run();
+					click = 0;
+				}
 			}
-			else
-				click++;
-			if(click >= 1) {
-				runnable.run();
-				click = 0;
-			}
-		}
 		return false;
 	}
 		

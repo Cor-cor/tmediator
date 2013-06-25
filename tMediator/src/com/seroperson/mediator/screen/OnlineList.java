@@ -217,7 +217,7 @@ public class OnlineList extends ScreenAdapter {
 	}
 
 	public synchronized void refresh(final Player[] players) {
-		final Player[] toList = players;
+		final Player[] toList = players;	// TODO collections
 		final IntMap<Integer> indexes = new IntMap<Integer>();
 		final int[] cases = new int[toList.length];
 		boolean mark = false;

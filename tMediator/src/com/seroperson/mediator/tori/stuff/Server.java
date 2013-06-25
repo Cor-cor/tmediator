@@ -4,7 +4,7 @@ public class Server {
 
 	private final String desc;
 	private final String room;
-	private final String mod; // TODO todo
+	private final String mod;
 	private final Player[] players;
 	private final String host;
 	private final int port;
@@ -46,4 +46,22 @@ public class Server {
 		return new StringBuilder(host).append(":").append(String.valueOf(port)).toString();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+		Server other = (Server) obj;
+		if(room == null) {
+			if(other.room != null)
+				return false;
+		}
+		else if(!room.equalsIgnoreCase(other.room))
+			return false;
+		return true;
+	}
+	
 }
