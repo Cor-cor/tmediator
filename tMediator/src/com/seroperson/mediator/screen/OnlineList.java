@@ -2,7 +2,18 @@ package com.seroperson.mediator.screen;
 
 import static com.seroperson.mediator.Mediator.getSettings;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TimerTask;
+import java.util.TreeMap;
 
 import javax.swing.SwingUtilities;
 
@@ -24,8 +35,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.esotericsoftware.tablelayout.Cell;
 import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.tori.stuff.Player;
@@ -37,23 +46,47 @@ public class OnlineList extends ScreenAdapter {
 
 	private Player[] inList = new Player[1];
 
+	private final float speed = 0.5f;
+	private final float colorSpeed = 0.0001f;
+	private final Mediator game;
+	private final Comparator<Player> playercomparator;
+	
 	private final Table main;
 	private final Table winbuttons;
 	private final Stage stage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 	private final Skin skin = new Skin(Gdx.files.internal("skin/skin.json"));
-
-	private final ObjectMap<String, SelectableLabel[]> labels = new ObjectMap<String, SelectableLabel[]>();
+	private final Map<Player, SelectableLabel[]> labels;	
 	private final Array<SelectableLabel> colored = new Array<SelectableLabel>();
 	private ServerViewer serverviewer;
-
-	private final float speed = 0.5f;
-	private final float colorSpeed = 0.0001f;
-	private final Mediator game;
 	
 	private boolean animation = false;
+	private boolean sorted = true;
 	
 	public OnlineList(final Mediator game) {
 		this.game = game;
+		
+		playercomparator = new Comparator<Player>() {
+			@Override
+			public int compare(Player o1, Player o2) {
+				int result = 1;
+				switch(getSettings().getSortingType()) { 
+					case 0:
+						result = o1.getClan().compareToIgnoreCase(o2.getClan());
+						return result == 0 ? -1 : result;
+					case 1:
+						result = o1.getName().compareToIgnoreCase(o2.getName());
+						return result == 0 ? -1 : result;
+					case 2:
+						int l1 = o1.getNameWithClanTag().length();
+						int l2 = o2.getNameWithClanTag().length();
+						return l1 < l2 ? 1 : l1 > l2 ? -1 : 1;
+				}
+				return 0;
+			} 
+		};
+		
+		labels = new HashMap<Player, SelectableLabel[]>();
+		
 		main = new Table();
 
 		winbuttons = new Table();
@@ -78,10 +111,6 @@ public class OnlineList extends ScreenAdapter {
 
 			@Override
 			public void changed(final ChangeEvent event, final Actor actor) {
-				// if(siv != null)
-				// siv.dispose();
-				// Mediator.getRegion("minimize").getTexture().dispose();
-				// dispose();
 				Gdx.app.exit();
 			}
 		});
@@ -139,7 +168,7 @@ public class OnlineList extends ScreenAdapter {
 
 			@Override
 			public boolean touchDown(final InputEvent event, final float x, final float y, final int pointer, final int button) {
-				final Values<SelectableLabel[]> label = labels.values();
+				final Collection<SelectableLabel[]> label = labels.values();
 				for(final SelectableLabel[] l : label)
 					for(final SelectableLabel lab : l)
 						lab.clearSelection();
@@ -155,6 +184,7 @@ public class OnlineList extends ScreenAdapter {
 		stage.addActor(scrp);
 		stage.addActor(bottomLeft);
 		stage.addActor(bottomRight);
+						
 	}
 
 	@Override
@@ -171,7 +201,12 @@ public class OnlineList extends ScreenAdapter {
 				Thread.sleep(50);
 				return;
 			}
-			if(getActionsSize(stage.getRoot(), 0) == 0 && colored.size == 0) { 
+			if(getActionsSize(stage.getRoot(), 0) == 0 && colored.size == 0) Sleep: { 
+				if(!sorted) { 
+					sort();
+					sorted = true;
+					break Sleep;
+				}
 				Thread.sleep(50);
 			}
 		}
@@ -215,14 +250,81 @@ public class OnlineList extends ScreenAdapter {
 	public ServerViewer getServerViewer() {
 		return serverviewer;
 	}
+	
+	public void sort() {
+		
+		Map<Float, Player> sorted = new TreeMap<Float, Player>();
+		List<Player> needed = Arrays.asList(inList);
+				
+		float tableHeight = main.getHeight();
+		float pad = getSettings().getPadBottom()*2;
+		Iterator<Entry<Player, SelectableLabel[]>> iterator = labels.entrySet().iterator();
+		while(iterator.hasNext()) {
+			Entry<Player, SelectableLabel[]> entry = iterator.next();
+			sorted.put(tableHeight-entry.getValue()[0].getY()-pad, entry.getKey());
+		}
+		
+		for(java.util.Map.Entry<Float, Player> entry : sorted.entrySet()) {
+			
+			SelectableLabel[] actionLabels = labels.get(entry.getValue());
+			int nposition = needed.indexOf(entry.getValue());
+			int cposition = (int) (entry.getKey()/actionLabels[0].getHeight());
+			float amount = 0; 
 
-	public synchronized void refresh(final Player[] players) {
-		final Player[] toList = players;	// TODO collections
+			if(nposition < 0)
+				continue;
+			
+			if(nposition == cposition)
+				continue;
+			
+			if(cposition < nposition) 
+				amount = -actionLabels[0].getHeight()*(nposition-cposition);				
+			else
+				if(cposition > nposition) 
+					amount = actionLabels[0].getHeight()*(cposition-nposition);
+			
+			if(amount == 0)
+				continue;
+			
+			for(int label = 0; label < 2; label++) {
+				SelectableLabel currentLabel = actionLabels[label];
+				currentLabel.addAction(Actions.moveBy(0, amount, getSpeed()));
+			}
+
+		}
+		
+		/*if(toremove.size() > 0) {
+			iterator = toremove.entrySet().iterator();
+			while(iterator.hasNext()) {
+				Entry<Player, SelectableLabel[]> entry = iterator.next();
+				SelectableLabel[] labelArr = entry.getValue();
+				for(int i = 0; i < 2; i++) {
+					final Cell<?> cell = main.getCell(labelArr[i]);
+					if(cell != null)
+						cell.setWidget(null);
+					main.removeActor(labelArr[i]);
+				}
+			}
+			main.layout(); // ^ ?
+			main.invalidate();
+			toremove.clear();
+		}*/
+
+	}
+	
+	public synchronized void refresh(final List<Player> players) {	
+				
+		if(getSettings().getSortingType() < 3) 
+			Collections.sort(players, playercomparator);
+		
+		final Player[] toList = players.toArray(new Player[players.size()]);	// TODO collections
 		final IntMap<Integer> indexes = new IntMap<Integer>();
 		final int[] cases = new int[toList.length];
 		boolean mark = false;
 		int i = 0;
 		
+		sorted = true;
+				
 		animation = !Mediator.isMinimized();
 
 		for(final Player player : toList) {
@@ -237,8 +339,12 @@ public class OnlineList extends ScreenAdapter {
 				i2++;
 			}
 			cases[i++] = index;
-			if(index == -1 && Mediator.getSettings().isMinimizeAction())
-				animation = true;
+			if(index == -1) { 
+				if(getSettings().isMinimizeAction())
+					animation = true;
+				if(getSettings().getSortingType() < 3 && !Mediator.isMinimized())
+					sorted = false;
+			}
 		}
 		i = 0;
 		for(final int index : cases) {
@@ -251,7 +357,7 @@ public class OnlineList extends ScreenAdapter {
 				case -1:
 					if(!mark) {
 						mark = true;
-						if(Mediator.getSettings().isMinimizeAction())
+						if(getSettings().isMinimizeAction())
 							if(Mediator.isMinimized()) {
 	
 								SwingUtilities.invokeLater(new Runnable() {
@@ -279,12 +385,13 @@ public class OnlineList extends ScreenAdapter {
 	
 							}
 						}
+					sorted = false;
 					addNewPlayer(player, main);
 					break;
 			}
 			i++;
 		}
-
+		
 		for(final Player player : inList) {
 			if(player == null)
 				break;
@@ -295,12 +402,13 @@ public class OnlineList extends ScreenAdapter {
 					break;
 				}
 			}
-			if(!cont)
-				removePlayer(player, main);
+			if(!cont) 
+				removePlayer(player);
 		}
-
-		animation = false;
 		
+		System.out.println(sorted);
+		animation = false;
+				
 		inList = toList;
 	}
 
@@ -328,30 +436,27 @@ public class OnlineList extends ScreenAdapter {
 		}
 		return count;
 	}
-	
-	private void removePlayer(final Player player, final Table table) {
-		final SelectableLabel[] remLabels = labels.get(player.getName());
-		labels.remove(player.getName());
+		
+	private void removePlayer(final Player player) {
+		final SelectableLabel[] remLabels = labels.remove(player);
+
 		if(remLabels == null)
 			return;
+				
 		for(int i = 0; i < remLabels.length; i++) {
 			
 			final SelectableLabel toremove = remLabels[i];
-			
-			if(toremove == null) {
-				continue;
-			}
-			
+						
 			Runnable runnable = new Runnable() {
 
 				@Override
 				public void run() {
-					final Cell<?> cell = table.getCell(toremove);
+					final Cell<?> cell = main.getCell(toremove);
 					if(cell != null)
 						cell.setWidget(null);
-					table.removeActor(toremove);
-					table.layout();
-					table.invalidate();
+					main.removeActor(toremove);
+					main.layout(); 
+					main.invalidate();
 				}
 			};
 			
@@ -360,17 +465,19 @@ public class OnlineList extends ScreenAdapter {
 			else
 				toremove.addAction(Actions.sequence(Actions.fadeOut(getSpeed()), Actions.run(runnable)));
 		}
-		final Values<SelectableLabel[]> values = labels.values();
-		if(animation) {
-			while(values.hasNext) {
-				final SelectableLabel[] label = values.next();
-				if(label[0].getY() < remLabels[0].getY())
-					for(int i = 0; i < 2; i++) {
-						final SelectableLabel upordown = label[i];
-						upordown.addAction(Actions.moveBy(0, upordown.getHeight(), getSpeed()));
-					}
-			}
+		
+		if(!animation || !sorted)
+			return;
+		
+		final Collection<SelectableLabel[]> values = labels.values();
+		for(SelectableLabel[] label : values){
+			if(label[0].getY() < remLabels[0].getY())
+				for(int i = 0; i < 2; i++) {
+					final SelectableLabel upordown = label[i];
+					upordown.addAction(Actions.moveBy(0, upordown.getHeight(), getSpeed()));
+				}
 		}
+	
 	}
 
 	private void addNewPlayer(final Player player, final Table table) {
@@ -378,7 +485,7 @@ public class OnlineList extends ScreenAdapter {
 		for(int i = 0; i < 2; i++)
 			table.add(arr[i]).align(Align.left);
 		table.row();
-		labels.put(player.getName(), arr);
+		labels.put(player, arr);
 	}
 
 	private SelectableLabel updateServer(final Player player) {
@@ -396,7 +503,7 @@ public class OnlineList extends ScreenAdapter {
 	private SelectableLabel updateLabel(final Player player, final int index, final String text, final float speed) {
 		final SelectableLabel field;
 
-		if(!labels.containsKey(player.getName())) {
+		if(!labels.containsKey(player)) {
 			field = new SelectableLabel("", skin);
 			if(animation) {
 				field.setColor(Color.GREEN);
@@ -407,7 +514,7 @@ public class OnlineList extends ScreenAdapter {
 				field.setColor(Color.BLACK);
 		}
 		else
-			field = labels.get(player.getName())[index];
+			field = labels.get(player)[index];
 
 		field.clearListeners();
 		field.addListener(field.getDefaultListener());

@@ -11,8 +11,8 @@ public class SettingsDef {
 	public String[] clans;
 
 	public float padLeft = 15/2;
-	public float padTop = 9;
 	public float padBottom = 5;
+	public int sort = 0;
 
 	public Boolean globals = true;
 	public Boolean unminimizeonnewplayer = true;

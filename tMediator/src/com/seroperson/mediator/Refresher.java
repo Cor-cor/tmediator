@@ -10,7 +10,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.TimerTask;
@@ -110,7 +109,7 @@ public class Refresher extends TimerTask {
 		return builder.toString();
 	}
 
-	public static Player[] getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv, final Player[] lastonlinelist) {
+	public static List<Player> getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv, final Player[] lastonlinelist) {
 		final List<Player> online = new ArrayList<Player>();
 		final Collection<String> caught = new ArrayList<String>(); 
 
@@ -154,10 +153,8 @@ public class Refresher extends TimerTask {
 			siv.update();
 			
 		}
-
-		Collections.sort(online);
 		
-		return online.toArray(new Player[online.size()]);
+		return online;
 	}
 
 	/**

@@ -221,7 +221,15 @@ public class MediatorDesktop extends JFrame {
 					setAlwaysOnTop(true);
 			}	
         });
-                       
+                
+        final MenuItem about = new MenuItem("About");
+        about.addActionListener(new ActionListener() { 
+        	 @Override
+ 			public void actionPerformed(ActionEvent e) {
+        		 
+        	}
+        });
+        
         final MenuItem exit = new MenuItem("Exit");
         exit.addActionListener(new ActionListener() {
             @Override
@@ -235,6 +243,7 @@ public class MediatorDesktop extends JFrame {
         popup.add(settings);
         if(isAlwaysOnTopSupported())
         	popup.add(ontop);
+        popup.add(about);
         popup.add(exit);
         
         TrayIcon trayIcon = new TrayIcon(image, "tMediator", popup);

@@ -14,10 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
@@ -36,8 +39,9 @@ public class SettingsSaver extends JFrame {
 	private final List<JTextComponent> players = new ArrayList<JTextComponent>();
 	private boolean globals;
 	private boolean minimizeAct;	
+	private int sort;
 	private final int w = 360;
-	private final int h = 180;
+	private final int h = 260;
 
 	public SettingsSaver(final Settings settings) {
 		final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -59,15 +63,39 @@ public class SettingsSaver extends JFrame {
 		final Container c = getContentPane();
 		c.setLayout(new BorderLayout());
 		
-		final JPanel radio = new JPanel();
-		final JCheckBox Cglobals = new JCheckBox("Track globals", current.isGlobalsTracking());
-		final JCheckBox CminimizeAct = new JCheckBox("Notify about new players", current.isMinimizeAction());
+		final Box top = Box.createVerticalBox();
 		
-		Cglobals.addItemListener(getItemListener(1));
-		CminimizeAct.addItemListener(getItemListener(2));
+		final Box radio = Box.createHorizontalBox();
+		final JLabel label = new JLabel("Sorting: ");
+		final Box radiobuttons = Box.createHorizontalBox();
+		final ButtonGroup bgroup = new ButtonGroup();
+		final JRadioButton[] radioarray = new JRadioButton[] { new JRadioButton("By clan"), new JRadioButton("By name"), new JRadioButton("By string length"), new JRadioButton("Disable") };
+
+		radiobuttons.add(label);
 		
-		radio.add(Cglobals);
-		radio.add(CminimizeAct);
+		for(int index = 0; index < radioarray.length; index++) {
+			final JRadioButton button = radioarray[index];
+			button.setActionCommand(Integer.toString(index));
+			button.addActionListener(getActionListener());
+			bgroup.add(button);
+			radiobuttons.add(button);
+		}
+				
+		radioarray[current.getSortingType()].setSelected(true);
+		radio.add(radiobuttons);
+		
+		final Box check = Box.createHorizontalBox();
+		final JCheckBox globals = new JCheckBox("Track globals", current.isGlobalsTracking());
+		final JCheckBox minimizeAct = new JCheckBox("Notify about new players", current.isMinimizeAction());
+		
+		globals.addItemListener(getItemListener(1));
+		minimizeAct.addItemListener(getItemListener(2));
+		
+		check.add(globals);
+		check.add(minimizeAct);
+		
+		top.add(check);
+		top.add(radio);
 		
 		final JPanel savepanel = new JPanel();
 		final JButton savebutton = new JButton("Save");
@@ -88,10 +116,21 @@ public class SettingsSaver extends JFrame {
 		final JSplitPane save = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jsp, savepanel);
 				
 		c.add(jsp, BorderLayout.CENTER);
-		c.add(radio, BorderLayout.NORTH);
+		c.add(top, BorderLayout.NORTH);
 		c.add(save, BorderLayout.SOUTH);
 	}
 
+	private ActionListener getActionListener() {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				sort = Integer.valueOf(e.getActionCommand());
+			}
+			
+		};
+	}
+	
 	private ItemListener getItemListener(final int index) { 
 		return new ItemListener() {
 
@@ -187,10 +226,10 @@ public class SettingsSaver extends JFrame {
 		def.globals = globals;
 		def.padBottom = current.getPadBottom();
 		def.padLeft = current.getPadLeft();
-		def.padTop = current.getPadTop();
 		def.period = current.getPeriod();
 		def.server = current.getServer();
 		def.port = current.getPort();
+		def.sort = sort;
 		def.uri = current.getForumURI();
 		final Settings settings = new Settings(def);
 		try {
