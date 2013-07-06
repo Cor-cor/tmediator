@@ -63,10 +63,10 @@ public class Settings {
 		return port;
 	}
 
-	public int getSortingType() { 
+	public int getSortingType() {
 		return sort;
 	}
-	
+
 	public String getServer() {
 		return server;
 	}
@@ -87,10 +87,10 @@ public class Settings {
 		return globals;
 	}
 
-	public boolean isMinimizeAction() { 
+	public boolean isMinimizeAction() {
 		return unminimizeonnewplayer;
 	}
-	
+
 	public float getPadLeft() {
 		return padLeft;
 	}

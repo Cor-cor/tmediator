@@ -226,7 +226,7 @@ public class MediatorDesktop extends JFrame {
         about.addActionListener(new ActionListener() { 
         	 @Override
  			public void actionPerformed(ActionEvent e) {
-        		 
+        		 new About();
         	}
         });
         

@@ -1,5 +1,6 @@
 package com.seroperson.mediator;
 
+import java.util.Arrays;
 import java.util.Timer;
 
 import com.badlogic.gdx.Game;
@@ -7,6 +8,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.seroperson.mediator.rubash.Logotype;
@@ -22,17 +24,24 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 	// TODO (!) rewrite without libgdx
 
-	private static ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
-	private static Settings settings;
+	private static final Interpolation interpolation = Interpolation.circle;
+	private static final ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
+	private static boolean minimized = false;
+	private static boolean debug;
 	private static Texture skinTexture;
-	private static volatile boolean minimized = false;
+	private static Settings settings;
 	private final Timer timer;
 	private final float scale;
 	private Server[] servers;
 	private Global[] globals = new Global[5];
 
-	public Mediator(final float sc) {
-		scale = sc;
+	public Mediator(final float scale) {
+		this(scale, false);
+	}
+
+	private Mediator(final float scale, final boolean debug) {
+		this.scale = scale;
+		Mediator.debug = debug;
 		timer = new Timer("Timer", true);
 	}
 
@@ -45,9 +54,9 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		buttons.put("minimize", new TextureRegion(Mediator.getSkinTexture(), 0, 0, 15, 15));
 		buttons.put("close", new TextureRegion(Mediator.getSkinTexture(), 17, 0, 15, 15));
 		buttons.put("back", new TextureRegion(Mediator.getSkinTexture(), 34, 0, 15, 15));
-		
+
 		Gdx.graphics.setVSync(false);
-		
+
 		setScreen(new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), scale));
 	}
 
@@ -74,6 +83,10 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return buttons.get(name);
 	}
 
+	public static boolean isDebug() {
+		return debug;
+	}
+
 	public static boolean isMinimized() {
 		return minimized;
 	}
@@ -85,22 +98,19 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return null;
 	}
 
+	public static Interpolation getInterpolation() { 
+		return interpolation;
+	}
+	
 	public Global[] getGlobals() {
 		return globals;
 	}
 
 	public void addGlobal(final Global g) {
 		final int index = getLastGlobalIndex();
-
-		if(index == globals.length - 1) {	// TODO remade ?
-			final Global[] bigger = new Global[globals.length + 5];
-			System.arraycopy(globals, 0, bigger, 0, globals.length);
-			bigger[globals.length] = g;
-			globals = bigger;
-		}
-		else
-			globals[index + 1] = g; 
-
+		if(index == globals.length - 1) 
+			globals = Arrays.copyOf(globals, globals.length+5);
+		globals[index + 1] = g;
 		handleGlobal(g);
 	}
 

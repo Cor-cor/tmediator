@@ -47,14 +47,14 @@ public class Server {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if(this == obj)
 			return true;
 		if(obj == null)
 			return false;
 		if(getClass() != obj.getClass())
 			return false;
-		Server other = (Server) obj;
+		final Server other = (Server) obj;
 		if(room == null) {
 			if(other.room != null)
 				return false;
@@ -63,5 +63,5 @@ public class Server {
 			return false;
 		return true;
 	}
-	
+
 }

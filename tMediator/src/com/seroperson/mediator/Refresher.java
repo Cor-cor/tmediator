@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
@@ -37,12 +38,12 @@ public class Refresher extends TimerTask {
 	@Override
 	public void run() {
 		try {
-			
+
 			mediator.setServers(getServers(mediator, getNPServers()));
-			onlinelist.refresh(getPlayersOnline(mediator.getServers(), getSettings().getNames(), getSettings().getClans(), onlinelist.getServerViewer(), onlinelist.getPlayersInList()));
-			
+			onlinelist.refresh(getPlayersOnline(mediator.getServers(), getSettings().getNames(), getSettings().getClans(), onlinelist.getServerViewer()));
+
 			Globals: {
-				
+
 				if(!getSettings().isGlobalsTracking())
 					break Globals;
 				final Global current = getGlobal(getNPGlobal());
@@ -109,9 +110,9 @@ public class Refresher extends TimerTask {
 		return builder.toString();
 	}
 
-	public static List<Player> getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv, final Player[] lastonlinelist) {
+	public static List<Player> getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv) {
 		final List<Player> online = new ArrayList<Player>();
-		final Collection<String> caught = new ArrayList<String>(); 
+		final Collection<String> caught = new ArrayList<String>(Arrays.asList(allplayers));
 
 		Collection<Server> viewer = null;
 		Collection<Server> added = null;
@@ -120,15 +121,12 @@ public class Refresher extends TimerTask {
 			added = new ArrayList<Server>(viewer.size());
 		}
 
-		for(final String s : allplayers)
-			caught.add(s);
-
 		for(final Server server : servers) {
 			if(server == null)
 				continue;
 
 			if(siv != null) {
-				if(viewer.contains(server)) { 
+				if(viewer.contains(server)) {
 					siv.add(server, server.getRoom(), false);
 					added.add(server);
 				}
@@ -137,23 +135,23 @@ public class Refresher extends TimerTask {
 			for(final Player player : server.getPlayers()) {
 				switch(handle(player, clans, online, caught)) {
 					case 0:
-						case 3:
-							online.add(player);
+					case 3:
+						online.add(player);
 				}
 			}
 		}
 
 		if(siv != null) {
-			
+
 			viewer.removeAll(added);
-			
+
 			for(final Server server : viewer)
 				siv.add(null, server.getRoom(), false);
 
 			siv.update();
-			
+
 		}
-		
+
 		return online;
 	}
 

@@ -28,7 +28,7 @@ import com.seroperson.mediator.tori.stuff.Server;
 
 @SuppressWarnings("serial")
 public class GlobalsViewer extends JFrame {
-	
+
 	// TODO refactoring (?)
 
 	private Global[] globals;

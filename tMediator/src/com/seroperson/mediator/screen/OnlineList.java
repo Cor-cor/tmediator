@@ -3,17 +3,11 @@ package com.seroperson.mediator.screen;
 import static com.seroperson.mediator.Mediator.getSettings;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TimerTask;
-import java.util.TreeMap;
 
 import javax.swing.SwingUtilities;
 
@@ -26,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -35,64 +30,43 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
-import com.esotericsoftware.tablelayout.Cell;
 import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
 import com.seroperson.mediator.utils.SelectableLabel;
+import com.seroperson.mediator.utils.handler.Adder;
+import com.seroperson.mediator.utils.handler.ChangeHandler;
+import com.seroperson.mediator.utils.handler.Remover;
+import com.seroperson.mediator.utils.handler.Sorter;
+import com.seroperson.mediator.utils.handler.Updater;
 import com.seroperson.mediator.viewer.ServerViewer;
 
 public class OnlineList extends ScreenAdapter {
 
-	private Player[] inList = new Player[1];
+	private List<Player> inList = new ArrayList<Player>();
 
 	private final float speed = 0.5f;
-	private final float colorSpeed = 0.0001f;
-	private final Mediator game;
-	private final Comparator<Player> playercomparator;
-	
+	private final float colorSpeed = Mediator.isDebug() ? 1 : 0.15f;
+
 	private final Table main;
-	private final Table winbuttons;
+	private final Mediator game;
 	private final Stage stage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 	private final Skin skin = new Skin(Gdx.files.internal("skin/skin.json"));
-	private final Map<Player, SelectableLabel[]> labels;	
+	private final Map<Player, Table> labels;
 	private final Array<SelectableLabel> colored = new Array<SelectableLabel>();
 	private ServerViewer serverviewer;
-	
+
+	private final ChangeHandler[] handlers = new ChangeHandler[] { new Remover(this), new Updater(this), new Adder(this), new Sorter(this) };
+	private int state = handlers.length;
+
 	private boolean animation = false;
-	private boolean sorted = true;
 	
 	public OnlineList(final Mediator game) {
 		this.game = game;
-		
-		playercomparator = new Comparator<Player>() {
-			@Override
-			public int compare(Player o1, Player o2) {
-				int result = 1;
-				switch(getSettings().getSortingType()) { 
-					case 0:
-						result = o1.getClan().compareToIgnoreCase(o2.getClan());
-						return result == 0 ? -1 : result;
-					case 1:
-						result = o1.getName().compareToIgnoreCase(o2.getName());
-						return result == 0 ? -1 : result;
-					case 2:
-						int l1 = o1.getNameWithClanTag().length();
-						int l2 = o2.getNameWithClanTag().length();
-						return l1 < l2 ? 1 : l1 > l2 ? -1 : 1;
-				}
-				return 0;
-			} 
-		};
-		
-		labels = new HashMap<Player, SelectableLabel[]>();
-		
+
+		labels = new HashMap<Player, Table>();
 		main = new Table();
-
-		winbuttons = new Table();
-		winbuttons.setFillParent(true);
-		winbuttons.top().right();
-
+		
 		final ScrollPane scrp = new ScrollPane(main, skin);
 
 		final Button toTray = new Button(skin);
@@ -140,22 +114,28 @@ public class OnlineList extends ScreenAdapter {
 			}
 
 		});
-
+		
+		final Table winbuttons = new Table();
+		winbuttons.setFillParent(true);
 		final Table bottomRight = new Table();
 		bottomRight.setFillParent(true);
 		final Table bottomLeft = new Table();
 		bottomLeft.setFillParent(true);
 		bottomLeft.bottom().right();
+		bottomLeft.setName("Bottom left");
 		bottomRight.bottom().left();
 		bottomRight.add(right).padLeft(getSettings().getPadLeft() / 2).padBottom(getSettings().getPadBottom() / 2);
 		bottomLeft.add(left).padRight(getSettings().getPadLeft() / 2).padBottom(getSettings().getPadBottom() / 2);
 		bottomRight.addListener(getFadeTableListener(bottomRight));
 		bottomLeft.addListener(getFadeTableListener(bottomLeft));
+		bottomRight.setName("Bottom right");
 
+		winbuttons.top().right();
 		winbuttons.add(toTray).padTop(5f).padRight(2f);
 		winbuttons.add(close).padTop(5f).padRight(5f);
 		winbuttons.addListener(getFadeTableListener(winbuttons));
-
+		winbuttons.setName("Window buttons");
+		
 		main.padLeft(getSettings().getPadLeft());
 		main.padTop(getSettings().getPadBottom());
 		main.padRight(getSettings().getPadLeft());
@@ -163,83 +143,110 @@ public class OnlineList extends ScreenAdapter {
 		main.align(Align.left);
 		main.left();
 		main.top();
-
+		
 		main.addListener(new InputListener() {
 
 			@Override
 			public boolean touchDown(final InputEvent event, final float x, final float y, final int pointer, final int button) {
-				final Collection<SelectableLabel[]> label = labels.values();
-				for(final SelectableLabel[] l : label)
-					for(final SelectableLabel lab : l)
-						lab.clearSelection();
+				final Collection<Table> label = labels.values();
+				for(final Table table : label)
+					for(final Actor lab : table.getChildren()) {
+						((SelectableLabel)lab).clearSelection();
+					}
 				return false;
+				// TODO to selectablelabel
 			}
 
 		});
 
-		scrp.setScrollingDisabled(false, false);
+		main.setName("Main table");
+		
+		scrp.setScrollingDisabled(true, false);
 		scrp.setFillParent(true);
 		scrp.setFlickScroll(false);
 
 		stage.addActor(scrp);
 		stage.addActor(bottomLeft);
 		stage.addActor(bottomRight);
-						
+		stage.addActor(winbuttons);
+
 	}
 
 	@Override
-	public synchronized void show() {
+	public void show() {
 		main.addAction(Actions.fadeIn(getSpeed()));
-		stage.addActor(winbuttons);
 		Gdx.input.setInputProcessor(stage);
 	}
 
 	@Override
-	public synchronized void render(final float delta) {
-		try { // TODO any alternative 
-			if(Mediator.isMinimized()) {
-				Thread.sleep(50);
-				return;
+	public void render(final float delta) {
+		if(state != handlers.length) {
+			if(handlers[state].start())
+				state++;
+		}
+		else {
+			try { // TODO any alternative
+				Thread.sleep(10);
+				if(Mediator.isMinimized())
+					return;
 			}
-			if(getActionsSize(stage.getRoot(), 0) == 0 && colored.size == 0) Sleep: { 
-				if(!sorted) { 
-					sort();
-					sorted = true;
-					break Sleep;
-				}
-				Thread.sleep(50);
+			catch (final InterruptedException e) {
+				getGame().handleThrow(e);
 			}
 		}
-		catch (InterruptedException e) {
-			getGame().handleThrow(e);
-		}
-		
+
 		stage.act(delta);
 		stage.draw();
 
+		/* TODO as actions? */
 		for(int i = 0; i < colored.size; i++) {
 			final SelectableLabel label = colored.get(i);
 			if(label.getColor().g > 0) {
-				label.getColor().sub(0, colorSpeed, 0, 0);
+				label.getColor().sub(0, delta*colorSpeed, 0, 0);
 			}
 			else {
+				label.getColor().set(Color.BLACK);
 				colored.removeValue(label, true);
 				i--;
 			}
 		}
 
 	}
-	
+
 	@Override
 	public void dispose() {
 		stage.dispose();
 	}
 
+	public int getColoredLabelsSize() {
+		return colored.size;
+	}
+	
+	public int getState() {
+		return state;
+	}
+
+	public int getActionsSize() {
+		return getActionsSize(stage.getRoot(), 0);
+	}
+	
+	public boolean isAnimated() {
+		return animation;
+	}
+
+	public Map<Player, Table> getLabelMap() {
+		return labels;
+	}
+
+	public float getSpeed() {
+		return speed;
+	}
+	
 	public Mediator getGame() {
 		return game;
 	}
 
-	public Player[] getPlayersInList() {
+	public List<Player> getPlayersInList() {
 		return inList;
 	}
 
@@ -251,147 +258,91 @@ public class OnlineList extends ScreenAdapter {
 		return serverviewer;
 	}
 	
-	public void sort() {
-		
-		Map<Float, Player> sorted = new TreeMap<Float, Player>();
-		List<Player> needed = Arrays.asList(inList);
-				
-		float tableHeight = main.getHeight();
-		float pad = getSettings().getPadBottom()*2;
-		Iterator<Entry<Player, SelectableLabel[]>> iterator = labels.entrySet().iterator();
-		while(iterator.hasNext()) {
-			Entry<Player, SelectableLabel[]> entry = iterator.next();
-			sorted.put(tableHeight-entry.getValue()[0].getY()-pad, entry.getKey());
-		}
-		
-		for(java.util.Map.Entry<Float, Player> entry : sorted.entrySet()) {
-			
-			SelectableLabel[] actionLabels = labels.get(entry.getValue());
-			int nposition = needed.indexOf(entry.getValue());
-			int cposition = (int) (entry.getKey()/actionLabels[0].getHeight());
-			float amount = 0; 
-
-			if(nposition < 0)
-				continue;
-			
-			if(nposition == cposition)
-				continue;
-			
-			if(cposition < nposition) 
-				amount = -actionLabels[0].getHeight()*(nposition-cposition);				
-			else
-				if(cposition > nposition) 
-					amount = actionLabels[0].getHeight()*(cposition-nposition);
-			
-			if(amount == 0)
-				continue;
-			
-			for(int label = 0; label < 2; label++) {
-				SelectableLabel currentLabel = actionLabels[label];
-				currentLabel.addAction(Actions.moveBy(0, amount, getSpeed()));
-			}
-
-		}
-		
-		/*if(toremove.size() > 0) {
-			iterator = toremove.entrySet().iterator();
-			while(iterator.hasNext()) {
-				Entry<Player, SelectableLabel[]> entry = iterator.next();
-				SelectableLabel[] labelArr = entry.getValue();
-				for(int i = 0; i < 2; i++) {
-					final Cell<?> cell = main.getCell(labelArr[i]);
-					if(cell != null)
-						cell.setWidget(null);
-					main.removeActor(labelArr[i]);
-				}
-			}
-			main.layout(); // ^ ?
-			main.invalidate();
-			toremove.clear();
-		}*/
-
+	public Table getMainTable() {
+		return main;
 	}
 	
-	public synchronized void refresh(final List<Player> players) {	
-				
-		if(getSettings().getSortingType() < 3) 
-			Collections.sort(players, playercomparator);
-		
-		final Player[] toList = players.toArray(new Player[players.size()]);	// TODO collections
+	public void setServerViewer(final ServerViewer serverviewer) {
+		this.serverviewer = serverviewer;
+	}
+
+	public synchronized void refresh(final List<Player> players) {
+
+		for(final ChangeHandler handler : handlers)
+			handler.reset();
+
+		final List<Player> toList = new ArrayList<Player>(players);
 		final IntMap<Integer> indexes = new IntMap<Integer>();
-		final int[] cases = new int[toList.length];
+		final int[] cases = new int[toList.size()];
 		boolean mark = false;
 		int i = 0;
-		
-		sorted = true;
-				
+		// TODO sorting flag ?
 		animation = !Mediator.isMinimized();
 
 		for(final Player player : toList) {
 			int index = -1;
 			int i2 = 0;
+
 			for(final Player playerold : inList) {
-				if(playerold != null && playerold.getName().equalsIgnoreCase(player.getName())) {
+				if(playerold.getName().equalsIgnoreCase(player.getName())) {
 					index = 1;
-					indexes.put(i, i2);
+					indexes.put(i, i2); // TODO refactoring
 					break;
 				}
 				i2++;
 			}
 			cases[i++] = index;
-			if(index == -1) { 
+			if(index == -1) {
 				if(getSettings().isMinimizeAction())
 					animation = true;
-				if(getSettings().getSortingType() < 3 && !Mediator.isMinimized())
-					sorted = false;
 			}
 		}
 		i = 0;
 		for(final int index : cases) {
-			final Player player = toList[i];
+			final Player player = toList.get(i);
 			switch(index) {
 				case 1:
-					if(!player.getServer().getRoom().equalsIgnoreCase(inList[indexes.get(i)].getServer().getRoom()))
-						updateServer(player, getSpeed() / 2);
+					if(!player.getServer().getRoom().equalsIgnoreCase(inList.get(indexes.get(i)).getServer().getRoom()))
+						handlers[State.UPDATING.getIndex()].add(player);
 					break;
 				case -1:
 					if(!mark) {
 						mark = true;
 						if(getSettings().isMinimizeAction())
 							if(Mediator.isMinimized()) {
-	
+
 								SwingUtilities.invokeLater(new Runnable() {
-	
+
 									@Override
 									public void run() {
 										game.unMinimize();
 									}
-								}); 
-	
+								});
+
 								final TimerTask task = new TimerTask() {
-	
+
 									@Override
 									public void run() {
-										SwingUtilities.invokeLater(new Runnable() { 
+										SwingUtilities.invokeLater(new Runnable() {
 											@Override
 											public void run() {
 												game.minimize();
 											} // FIXME it really need here?
 										});
-			
+
 									}
 								};
+
 								game.getTimer().schedule(task, 10000); // TODO settings?
-	
+
 							}
-						}
-					sorted = false;
-					addNewPlayer(player, main);
+					}
+					handlers[State.ADDING.getIndex()].add(player);
 					break;
 			}
 			i++;
 		}
-		
+
 		for(final Player player : inList) {
 			if(player == null)
 				break;
@@ -402,136 +353,69 @@ public class OnlineList extends ScreenAdapter {
 					break;
 				}
 			}
-			if(!cont) 
-				removePlayer(player);
+			if(!cont)
+				handlers[State.REMOVING.getIndex()].add(player);
 		}
-		
-		System.out.println(sorted);
-		animation = false;
-				
+
+		state = State.REMOVING.getIndex();
+
 		inList = toList;
 	}
 
-	public Skin getSkin() {
-		return skin;
+	public SelectableLabel updateServer(final Player player) {
+		return updateLabel(player, 1, new StringBuilder().append(" on ").append(player.getServer().getRoom()).toString(), getSpeed(), null);
 	}
 
-	public Table getWindowButtons() {
-		return winbuttons;
+	public SelectableLabel updatePlayer(final Player player) {
+		return updateLabel(player, 0, player.getNameWithClanTag(), getSpeed(), null);
 	}
 
-	public void setServerViewer(final ServerViewer serverviewer) {
-		this.serverviewer = serverviewer;
-	}
-
-	/* incorrect implementation, but it works here */
-	private int getActionsSize(Group group, int count) { 
-		for(Actor actor : group.getChildren()) { 
-			count += actor.getActions().size;
-			if(actor instanceof Group) {
-				count += getActionsSize((Group) actor, count);
-			} 
-			if(count > 0)
-				return count;
-		}
-		return count;
-	}
-		
-	private void removePlayer(final Player player) {
-		final SelectableLabel[] remLabels = labels.remove(player);
-
-		if(remLabels == null)
-			return;
-				
-		for(int i = 0; i < remLabels.length; i++) {
-			
-			final SelectableLabel toremove = remLabels[i];
-						
-			Runnable runnable = new Runnable() {
-
-				@Override
-				public void run() {
-					final Cell<?> cell = main.getCell(toremove);
-					if(cell != null)
-						cell.setWidget(null);
-					main.removeActor(toremove);
-					main.layout(); 
-					main.invalidate();
-				}
-			};
-			
-			if(!animation)
-				runnable.run();
-			else
-				toremove.addAction(Actions.sequence(Actions.fadeOut(getSpeed()), Actions.run(runnable)));
-		}
-		
-		if(!animation || !sorted)
-			return;
-		
-		final Collection<SelectableLabel[]> values = labels.values();
-		for(SelectableLabel[] label : values){
-			if(label[0].getY() < remLabels[0].getY())
-				for(int i = 0; i < 2; i++) {
-					final SelectableLabel upordown = label[i];
-					upordown.addAction(Actions.moveBy(0, upordown.getHeight(), getSpeed()));
-				}
-		}
-	
-	}
-
-	private void addNewPlayer(final Player player, final Table table) {
-		final SelectableLabel[] arr = new SelectableLabel[] { updatePlayer(player), updateServer(player) };
-		for(int i = 0; i < 2; i++)
-			table.add(arr[i]).align(Align.left);
-		table.row();
-		labels.put(player, arr);
-	}
-
-	private SelectableLabel updateServer(final Player player) {
-		return updateServer(player, getSpeed());
-	}
-
-	private SelectableLabel updateServer(final Player player, final float speed) {
-		return updateLabel(player, 1, new StringBuilder().append(" on ").append(player.getServer().getRoom()).toString(), speed);
-	}
-
-	private SelectableLabel updatePlayer(final Player player) {
-		return updateLabel(player, 0, player.getNameWithClanTag(), getSpeed());
-	}
-
-	private SelectableLabel updateLabel(final Player player, final int index, final String text, final float speed) {
+	private SelectableLabel updateLabel(final Player player, final int index, final String text, final float speed, final Runnable finish) {
 		final SelectableLabel field;
 
 		if(!labels.containsKey(player)) {
-			field = new SelectableLabel("", skin);
-			if(animation) {
-				field.setColor(Color.GREEN);
-				field.getColor().g = 0.7f;
-				colored.add(field);
+			final Table current = new Table();
+			current.setName(player.getName()); 
+			labels.put(player, current);
+
+			for(int i = 0; i < 2; i++) {
+				final SelectableLabel label = new SelectableLabel("", skin);
+				if(animation) {
+					label.setColor(Color.GREEN);
+					label.getColor().g = 0.7f;
+					colored.add(label);
+				}
+				else
+					label.setColor(Color.BLACK);
+				current.add(label).align(Align.left);
 			}
-			else
-				field.setColor(Color.BLACK);
 		}
-		else
-			field = labels.get(player)[index];
+
+		field = (SelectableLabel)labels.get(player).getChildren().get(index);
 
 		field.clearListeners();
 		field.addListener(field.getDefaultListener());
 		field.addListener(getListener(player));
-		
-		Runnable runnable = new Runnable() {
+
+		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
 				field.setText(text);
 			}
 		};
-		
-		if(animation)
-			field.addAction(Actions.sequence(Actions.fadeOut(getSpeed()), Actions.run(runnable), Actions.fadeIn(getSpeed())));
-		else
+
+		if(!animation) {
 			runnable.run();
+			if(finish != null)
+				finish.run();
+		}
+		else {
+			final SequenceAction sequence = Actions.sequence(Actions.fadeOut(getSpeed()), Actions.run(runnable), Actions.fadeIn(getSpeed()));
+			if(finish != null)
+				sequence.addAction(Actions.run(finish));
+			field.addAction(sequence);
+		}
 
 		return field;
 	}
@@ -557,8 +441,33 @@ public class OnlineList extends ScreenAdapter {
 		};
 	}
 
-	private float getSpeed() {
-		return speed;
+	/* incorrect implementation, but it works here */
+	private int getActionsSize(final Group group, int count) {
+		for(final Actor actor : group.getChildren()) {
+			count += actor.getActions().size;
+			if(actor instanceof Group) {
+				count += getActionsSize((Group) actor, count);
+			}
+			if(count > 0)
+				return count;
+		}
+		return count;
+	}
+	
+	private enum State {
+
+		REMOVING(0), UPDATING(1), ADDING(2), SORTING(3), NOTHING(4);
+
+		int index;
+
+		State(final int index) {
+			this.index = index;
+		}
+
+		public int getIndex() {
+			return index;
+		}
+
 	}
 
 }

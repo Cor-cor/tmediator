@@ -39,16 +39,16 @@ public class Player {
 	public String getNameWithClanTag() {
 		if(namewithclantag != null)
 			return namewithclantag;
-		
+
 		final StringBuilder pl = new StringBuilder();
 
 		if(getClan().equals(Parser.CNONE))
 			pl.append(getName());
 		else
-			pl.append("[").append(getClan()).append("]").append(getName());
+			pl.append("[").append(getClan()).append("] ").append(getName());
 
 		namewithclantag = pl.toString();
-		
+
 		return namewithclantag;
 	}
 
@@ -56,19 +56,19 @@ public class Player {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (name == null ? 0 : name.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if(this == obj)
 			return true;
 		if(obj == null)
 			return false;
 		if(getClass() != obj.getClass())
 			return false;
-		Player other = (Player) obj;
+		final Player other = (Player) obj;
 		if(name == null) {
 			if(other.name != null)
 				return false;
@@ -77,5 +77,5 @@ public class Player {
 			return false;
 		return true;
 	}
-	
+
 }

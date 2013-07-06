@@ -1,12 +1,14 @@
 package com.seroperson.mediator.rubash;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.seroperson.mediator.Debugger;
 import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.Refresher;
 import com.seroperson.mediator.screen.OnlineList;
@@ -14,7 +16,7 @@ import com.seroperson.mediator.screen.ScreenAdapter;
 
 public class Logotype extends ScreenAdapter {
 
-	private State state = State.In;
+	private State state = Mediator.isDebug() ? State.Out : State.In;
 	private final TextureRegion textureregion;
 	private final SpriteBatch batch = new SpriteBatch();
 	private final Color color = new Color(batch.getColor());
@@ -59,16 +61,19 @@ public class Logotype extends ScreenAdapter {
 				color.a -= outSpeed;
 				if(color.a < 0) {
 					color.a = 0;
-
+					dispose();
 					final OnlineList list = new OnlineList(mediator);
 					mediator.setScreen(list);
+					if(Mediator.isDebug()) {
+						Gdx.input.setInputProcessor(new InputMultiplexer(new Debugger(list), list.getMainTable().getStage()));
+						return;
+					}
 					try {
 						mediator.getTimer().schedule(new Refresher(mediator, list), 0, Mediator.getSettings().getPeriod());
 					}
 					catch (final Throwable e) {
 						mediator.handleThrow(e);
 					}
-					dispose();
 					return;
 				}
 				break;

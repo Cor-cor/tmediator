@@ -53,12 +53,12 @@ public class Parser {
 	}
 
 	public static Global getGlobal(String npglobal) throws Throwable {
-		if(!npglobal.contains("latest_broadcast")) // FIXME ... (?)
+		if(!npglobal.contains("latest_broadcast")) // TODO ... (?)
 			return null;
 
 		/* message may contain incorrect attribute for xml :c */
 		npglobal = npglobal.replaceAll("~<a href=\"member.php\\?u=\\d{0,9}\">+\\p{ASCII}+", "</div>");
-		
+
 		final DocumentBuilder docbuilder = factory.newDocumentBuilder();
 		final InputStream stream = new ByteArrayInputStream(npglobal.getBytes());
 		final String message;
@@ -80,7 +80,7 @@ public class Parser {
 		message = node.getTextContent().trim();
 		player = node.getAttributes().getNamedItem("data-username").getTextContent().trim();
 		server = node.getAttributes().getNamedItem("data-room").getTextContent().trim();
-		date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(node.getAttributes().getNamedItem("data-post_time").getTextContent().trim());
+		date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(node.getAttributes().getNamedItem("data-post_time").getTextContent().trim()); // TODO current time
 
 		return new Global(message, date, server, player);
 	}
@@ -88,7 +88,7 @@ public class Parser {
 	@SuppressWarnings("unused")
 	private static Object[] handleString(final String fullStr, final StringTokenizer st, final boolean prevdescisnull) throws ParseException {
 		String currentStr = null;
-		
+
 		{
 			if(!prevdescisnull)
 				currentStr = st.nextToken();
@@ -124,8 +124,8 @@ public class Parser {
 						String withoutclantag = null;
 						String clantag = null;
 						if(withclantag.contains("[")) { // or "]"
-							int oppos = withclantag.indexOf('[');
-							int clpos = withclantag.indexOf(']'); // TODO as regex
+							final int oppos = withclantag.indexOf('[');
+							final int clpos = withclantag.indexOf(']'); // TODO as regex
 							clantag = withclantag.substring(oppos+1, clpos);
 							withoutclantag =  withclantag.substring(clpos+1);
 						}
@@ -135,7 +135,6 @@ public class Parser {
 						}
 						players.add(new Player(withoutclantag, clantag, null));
 					}
-					// TODO (?) #findplayer(string[] allplayers)
 				}
 
 				currentStr = st.nextToken();
@@ -149,7 +148,7 @@ public class Parser {
 					matcher.find();
 					mod = matcher.group().trim();
 				}
-				/* TODO handle NEWGAME (?) */
+
 				if(st.hasMoreTokens())
 					currentStr = st.nextToken();
 
@@ -169,9 +168,9 @@ public class Parser {
 					p.setServer(server);
 				return new Object[] { server, new Boolean(descnull) };
 			}
-			
+
 			throw new ParseException(new StringBuilder("Parse error; \n").append(currentStr).toString(), fullStr.indexOf(currentStr));
-			
+
 		}
 	}
 

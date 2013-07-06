@@ -38,9 +38,9 @@ public class SettingsSaver extends JFrame {
 	private final List<JTextComponent> clans = new ArrayList<JTextComponent>();
 	private final List<JTextComponent> players = new ArrayList<JTextComponent>();
 	private boolean globals;
-	private boolean minimizeAct;	
+	private boolean minimizeAct;
 	private int sort;
-	private final int w = 360;
+	private final int w = 380;
 	private final int h = 260;
 
 	public SettingsSaver(final Settings settings) {
@@ -53,18 +53,18 @@ public class SettingsSaver extends JFrame {
 		setLocation(d.width / 2 - getSize().width / 2, d.height / 2 - getSize().height / 2);
 
 		final Settings current = Mediator.getSettings();
-		
+
 		globals = current.isGlobalsTracking();
 		minimizeAct = current.isMinimizeAction();
-		
+
 		final Component clans = createEditorPanel(settings.getClans(), this.clans);
 		final Component players = createEditorPanel(settings.getNames(), this.players);
-		
+
 		final Container c = getContentPane();
 		c.setLayout(new BorderLayout());
-		
+
 		final Box top = Box.createVerticalBox();
-		
+
 		final Box radio = Box.createHorizontalBox();
 		final JLabel label = new JLabel("Sorting: ");
 		final Box radiobuttons = Box.createHorizontalBox();
@@ -72,7 +72,7 @@ public class SettingsSaver extends JFrame {
 		final JRadioButton[] radioarray = new JRadioButton[] { new JRadioButton("By clan"), new JRadioButton("By name"), new JRadioButton("By string length"), new JRadioButton("Disable") };
 
 		radiobuttons.add(label);
-		
+
 		for(int index = 0; index < radioarray.length; index++) {
 			final JRadioButton button = radioarray[index];
 			button.setActionCommand(Integer.toString(index));
@@ -80,23 +80,23 @@ public class SettingsSaver extends JFrame {
 			bgroup.add(button);
 			radiobuttons.add(button);
 		}
-				
+
 		radioarray[current.getSortingType()].setSelected(true);
 		radio.add(radiobuttons);
-		
+
 		final Box check = Box.createHorizontalBox();
 		final JCheckBox globals = new JCheckBox("Track globals", current.isGlobalsTracking());
 		final JCheckBox minimizeAct = new JCheckBox("Notify about new players", current.isMinimizeAction());
-		
+
 		globals.addItemListener(getItemListener(1));
 		minimizeAct.addItemListener(getItemListener(2));
-		
+
 		check.add(globals);
 		check.add(minimizeAct);
-		
+
 		top.add(check);
 		top.add(radio);
-		
+
 		final JPanel savepanel = new JPanel();
 		final JButton savebutton = new JButton("Save");
 		savebutton.addActionListener(new ActionListener() {
@@ -110,11 +110,11 @@ public class SettingsSaver extends JFrame {
 
 		});
 		savepanel.add(savebutton);
-		
+
 		final JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, clans, players);
 		jsp.setContinuousLayout(true);
 		final JSplitPane save = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jsp, savepanel);
-				
+
 		c.add(jsp, BorderLayout.CENTER);
 		c.add(top, BorderLayout.NORTH);
 		c.add(save, BorderLayout.SOUTH);
@@ -124,31 +124,31 @@ public class SettingsSaver extends JFrame {
 		return new ActionListener() {
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				sort = Integer.valueOf(e.getActionCommand());
 			}
-			
+
 		};
 	}
-	
-	private ItemListener getItemListener(final int index) { 
+
+	private ItemListener getItemListener(final int index) {
 		return new ItemListener() {
 
 			@Override
-			public void itemStateChanged(ItemEvent e) {
-				switch(index) { 
+			public void itemStateChanged(final ItemEvent e) {
+				switch(index) {
 					case 1:
 						globals = !(e.getItemSelectable().getSelectedObjects() == null);
 						break;
-					case 2: 
+					case 2:
 						minimizeAct = !(e.getItemSelectable().getSelectedObjects() == null);
 						break;
-				}		
-			} 
-			
+				}
+			}
+
 		};
 	}
-	
+
 	private Component createEditorPanel(final String[] arr, final List<JTextComponent> list) {
 		final Box compbox = Box.createVerticalBox();
 		final Box innerbox = Box.createVerticalBox();
@@ -187,7 +187,6 @@ public class SettingsSaver extends JFrame {
 	private JTextField createTextField(final String text, final Box box, final List<JTextComponent> list) {
 		final Box boxfield = Box.createHorizontalBox();
 		final JTextField field = new JTextField(text, 10);
-//		field.setMaximumSize(d);
 		field.setCaretPosition(0);
 		final JButton delete = new JButton("-");
 		delete.addActionListener(new ActionListener() {

@@ -15,26 +15,27 @@ public class ServerInputListener extends InputListener {
 	private final Player player;
 	private long counter;
 	private int click = 0;
-	
-	public ServerInputListener(OnlineList lst, Player p) { 
-		this.player = p;
-		this.list = lst;
-		this.runnable = new Runnable() {
+
+	public ServerInputListener(final OnlineList lst, final Player p) {
+		player = p;
+		list = lst;
+		runnable = new Runnable() {
 			@Override
 			public void run() {
 				if(list.getServerViewer() == null)
 					list.setServerViewer(new ServerViewer(list));
-				Server s = Mediator.getServerByRoom(player.getServer().getRoom(), list.getServers());
+				final Server s = Mediator.getServerByRoom(player.getServer().getRoom(), list.getServers());
 				list.getServerViewer().add(s, s.getRoom(), true);
 			}
 		};
 	}
-	
-	public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+
+	@Override
+	public boolean touchDown (final InputEvent event, final float x, final float y, final int pointer, final int button) {
 		if(button == Buttons.MIDDLE)
 			runnable.run();
 		else
-			if(button == Buttons.LEFT) { 
+			if(button == Buttons.LEFT) {
 				if(System.currentTimeMillis() - counter > 1000) {
 					counter = 0;
 					click = 0;
@@ -49,5 +50,5 @@ public class ServerInputListener extends InputListener {
 			}
 		return false;
 	}
-		
+
 }
