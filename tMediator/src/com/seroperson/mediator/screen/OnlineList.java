@@ -161,7 +161,7 @@ public class OnlineList extends ScreenAdapter {
 
 		main.setName("Main table");
 		
-		scrp.setScrollingDisabled(true, false);
+		scrp.setScrollingDisabled(false, false);
 		scrp.setFillParent(true);
 		scrp.setFlickScroll(false);
 
@@ -186,7 +186,7 @@ public class OnlineList extends ScreenAdapter {
 		}
 		else {
 			try { // TODO any alternative
-				Thread.sleep(10);
+				Thread.sleep(20);
 				if(Mediator.isMinimized())
 					return;
 			}

@@ -27,9 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -46,6 +44,7 @@ import com.seroperson.mediator.tori.stuff.Global;
 @SuppressWarnings("serial")
 public class MediatorDesktop extends JFrame {
 	
+	private Image icon;
 	private final Point location = new Point();
 	private final Mediator mediator;
 	
@@ -101,11 +100,7 @@ public class MediatorDesktop extends JFrame {
 
 		};		
 		 
-        try {
-			setIconImage(ImageIO.read(getClass().getResource("/skin/icon.png")));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        setIconImage(icon);
 	    setExtendedState(Frame.NORMAL);
 	    setUndecorated(true);
 	    setFocusable(false);	    
@@ -173,8 +168,9 @@ public class MediatorDesktop extends JFrame {
 	}
 	
 	private TrayIcon initTray() { 
-        final Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/skin/icon.png"));
-        
+
+		icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/skin/icon.png"));
+		
         PopupMenu popup = new PopupMenu();     
         
         final MenuItem open = new MenuItem("Open");
@@ -246,7 +242,7 @@ public class MediatorDesktop extends JFrame {
         popup.add(about);
         popup.add(exit);
         
-        TrayIcon trayIcon = new TrayIcon(image, "tMediator", popup);
+        TrayIcon trayIcon = new TrayIcon(icon, "tMediator", popup);
         trayIcon.addMouseListener(new MouseAdapter() { 
         	 public void mouseClicked(MouseEvent e) {
         		 if(e.getClickCount() >= 2)
