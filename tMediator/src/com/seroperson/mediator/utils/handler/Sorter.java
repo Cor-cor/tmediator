@@ -50,7 +50,7 @@ public class Sorter extends ChangeHandler {
 		if(!super.start())
 			return isFinished();
 
-		if(getSettings().getSortingType() < 3)
+		if(getScreen().needToSort())
 			sort();
 
 		return isFinished();
@@ -98,7 +98,7 @@ public class Sorter extends ChangeHandler {
 		
 	}
 	
-	private boolean push(int cindex, int nindex, Actor actor) {  
+	private void push(int cindex, int nindex, Actor actor) {  
 
 		float amount = 0;
 		
@@ -113,7 +113,6 @@ public class Sorter extends ChangeHandler {
 		else 
 			actor.translate(0, amount);
 		
-		return true;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

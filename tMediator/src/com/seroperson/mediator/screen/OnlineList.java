@@ -60,6 +60,7 @@ public class OnlineList extends ScreenAdapter {
 	private int state = handlers.length;
 
 	private boolean animation = false;
+	private boolean sort = false;
 	
 	public OnlineList(final Mediator game) {
 		this.game = game;
@@ -179,7 +180,7 @@ public class OnlineList extends ScreenAdapter {
 	}
 
 	@Override
-	public void render(final float delta) {
+	public synchronized void render(final float delta) {
 		if(state != handlers.length) {
 			if(handlers[state].start())
 				state++;
@@ -234,6 +235,10 @@ public class OnlineList extends ScreenAdapter {
 		return animation;
 	}
 
+	public boolean needToSort() { 
+		return sort;
+	}
+	
 	public Map<Player, Table> getLabelMap() {
 		return labels;
 	}
@@ -276,7 +281,8 @@ public class OnlineList extends ScreenAdapter {
 		final int[] cases = new int[toList.size()];
 		boolean mark = false;
 		int i = 0;
-		// TODO sorting flag ?
+
+		sort = false;
 		animation = !Mediator.isMinimized();
 
 		for(final Player player : toList) {
@@ -293,6 +299,8 @@ public class OnlineList extends ScreenAdapter {
 			}
 			cases[i++] = index;
 			if(index == -1) {
+				if(getSettings().getSortingType() < 3)
+					sort = true;
 				if(getSettings().isMinimizeAction())
 					animation = true;
 			}
@@ -356,7 +364,7 @@ public class OnlineList extends ScreenAdapter {
 			if(!cont)
 				handlers[State.REMOVING.getIndex()].add(player);
 		}
-
+		
 		state = State.REMOVING.getIndex();
 
 		inList = toList;
