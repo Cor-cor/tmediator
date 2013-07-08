@@ -403,7 +403,8 @@ public class OnlineList extends ScreenAdapter {
 
 		field.clearListeners();
 		field.addListener(field.getDefaultListener());
-		field.addListener(getListener(player));
+		if(index == 1)
+			field.addListener(getListener(player));
 
 		final Runnable runnable = new Runnable() {
 
