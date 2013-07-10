@@ -108,8 +108,7 @@ public class MediatorDesktop extends JFrame {
 		 
         setIconImage(icon);
 	    setExtendedState(Frame.NORMAL);
-	    setUndecorated(true);
-	    setFocusable(false);	    
+	    setUndecorated(true);	 
 	    
 	    JComponent c = (JComponent)getContentPane();  
 		LwjglAWTCanvas canvas = new LwjglAWTCanvas(mediator, false);
@@ -160,11 +159,13 @@ public class MediatorDesktop extends JFrame {
 						if(!Mediator.isMinimized()) 
 							mediator.minimize();
 						setVisible(false);
+						setFocusableWindowState(false);
 						break;
 					case(Frame.NORMAL): 
 						setLocation(location);
 						if(Mediator.isMinimized()) 
 							mediator.unMinimize();
+						setFocusableWindowState(true);
 						break;
 				}
 			}
