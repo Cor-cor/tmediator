@@ -28,8 +28,8 @@ public class Parser {
 	private final static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	private final static String TORIBASH = "TORIBASH";
 	private final static String REGEXP_SERVER = "([\\d{1,3}\\.]+):(\\d{1,})\\s(\\p{ASCII}+)";
-	private final static String REGEXP_CLIENT = "[^\\s]+([a-zA-Z0-9\\-]{1,30})"; // TODO ...
-	private final static String REGEXP_MOD = "[a-zA-Z0-9-_\\.\\!\\?$#@\\(\\)]+\\.tbm"; // TODO ...
+	private final static String REGEXP_CLIENT = "[^\\s]+[(\\w)[^\\s]]"; // TODO ...
+	private final static String REGEXP_MOD = "[^\\s]+\\.tbm";
 	private final static String REGEXP_COLORS = "\\^\\d{2}+";
 	public final static String CNONE = "none";
 
@@ -120,14 +120,14 @@ public class Parser {
 					final Matcher matcher = pattern.matcher(currentStr.split(";")[1]);
 					players = new ArrayList<Player>(5);
 					while(matcher.find()) {
-						final String withclantag = matcher.group(0);
+						final String withclantag = matcher.group(0).trim();
 						String withoutclantag = null;
 						String clantag = null;
 						if(withclantag.contains("[")) { // or "]"
 							final int oppos = withclantag.indexOf('[');
 							final int clpos = withclantag.indexOf(']'); // TODO as regex
 							clantag = withclantag.substring(oppos+1, clpos);
-							withoutclantag =  withclantag.substring(clpos+1);
+							withoutclantag =  withclantag.substring(clpos+1).trim();
 						}
 						else {
 							clantag = CNONE;

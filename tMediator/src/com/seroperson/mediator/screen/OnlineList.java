@@ -181,37 +181,45 @@ public class OnlineList extends ScreenAdapter {
 
 	@Override
 	public synchronized void render(final float delta) {
-		if(state != handlers.length) {
-			if(handlers[state].start())
-				state++;
-		}
-		else {
-			try { // TODO any alternative
-				Thread.sleep(20);
-				if(Mediator.isMinimized())
-					return;
-			}
-			catch (final InterruptedException e) {
-				getGame().handleThrow(e);
-			}
-		}
-
-		stage.act(delta);
-		stage.draw();
-
+		
 		/* TODO as actions? */
 		for(int i = 0; i < colored.size; i++) {
 			final SelectableLabel label = colored.get(i);
-			if(label.getColor().g > 0) {
+			if(label.getColor().g > 0) 
 				label.getColor().sub(0, delta*colorSpeed, 0, 0);
-			}
-			else {
+			
+			if(label.getColor().g <= 0) {
 				label.getColor().set(Color.BLACK);
 				colored.removeValue(label, true);
 				i--;
 			}
 		}
-
+		
+		if(state != handlers.length) {
+			while(state <= handlers.length-1) 
+				if(handlers[state].start()) {
+					state++;
+					main.layout();
+				}
+				else
+					break;
+		}
+		else {
+			try {
+				Thread.sleep(20);
+			}
+			catch (final InterruptedException e) {
+				getGame().handleThrow(e);
+			}
+		}
+		
+		stage.act(delta);
+		
+		if(Mediator.isMinimized())
+			return;		
+		
+		stage.draw();
+		
 	}
 
 	@Override
@@ -235,6 +243,10 @@ public class OnlineList extends ScreenAdapter {
 		return animation;
 	}
 
+	public void setAnimation(boolean a) { 
+		animation = a;
+	}
+	
 	public boolean needToSort() { 
 		return sort;
 	}
@@ -310,7 +322,7 @@ public class OnlineList extends ScreenAdapter {
 			final Player player = toList.get(i);
 			switch(index) {
 				case 1:
-					if(!player.getServer().getRoom().equalsIgnoreCase(inList.get(indexes.get(i)).getServer().getRoom()))
+					if(!player.getServer().equals(inList.get(indexes.get(i)).getServer()))
 						handlers[State.UPDATING.getIndex()].add(player);
 					break;
 				case -1:

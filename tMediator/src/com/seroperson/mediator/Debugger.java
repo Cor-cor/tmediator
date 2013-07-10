@@ -1,5 +1,6 @@
 package com.seroperson.mediator;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -87,6 +88,14 @@ public class Debugger extends InputAdapter {
 					throw new NullPointerException("Test");
 				}
 				catch(Throwable t) {
+					list.getGame().handleThrow(t);
+					return false;
+				}
+			case Keys.N:
+				try {
+					throw new ConnectException("Test");
+				}
+				catch(Throwable t) {				// Net error
 					list.getGame().handleThrow(t);
 					return false;
 				}

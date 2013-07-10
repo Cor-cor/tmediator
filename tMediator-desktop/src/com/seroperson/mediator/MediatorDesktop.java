@@ -83,6 +83,12 @@ public class MediatorDesktop extends JFrame {
 			
 			@Override
 			public void handleThrow(final Throwable t) { 
+				if(t.getClass().equals(java.net.ConnectException.class) ||
+				(t.getClass().equals(java.io.IOException.class) && 
+			     t.getMessage().contains("response code"))) {  // TODO connections errors
+					tray.displayMessage("tMediator error", t.getMessage(), MessageType.ERROR);
+					return;
+				}
 				mediator.getTimer().cancel();
 				frame.dispose();
 				
@@ -95,7 +101,7 @@ public class MediatorDesktop extends JFrame {
 			
 			@Override
 			public void handleGlobal(Global g) { 
-				tray.displayMessage("tMediator | Ingame broadcast by "+g.getPlayer(), g.getMessage(), MessageType.INFO);
+				tray.displayMessage(new StringBuilder("tMediator | Ingame broadcast by ").append(g.getPlayer()).toString(), g.getMessage(), MessageType.INFO);
 			}
 
 		};		
@@ -133,12 +139,14 @@ public class MediatorDesktop extends JFrame {
 	
 	private WindowAdapter getWindowListener(final TrayIcon trayIcon) { 
 		return new WindowAdapter() { 
+			
 			@Override
 			public void windowClosed(WindowEvent e) { 
 				trayIcon.getImage().flush();
 				SystemTray.getSystemTray().remove(trayIcon);
 				mediator.dispose();
 			}
+			
 		};
 	}
 	
@@ -149,17 +157,14 @@ public class MediatorDesktop extends JFrame {
 			public void windowStateChanged(WindowEvent e) { 
 				switch(e.getNewState()) { 
 					case(Frame.ICONIFIED): 
-						if(!Mediator.isMinimized()) {
+						if(!Mediator.isMinimized()) 
 							mediator.minimize();
-						}
 						setVisible(false);
 						break;
 					case(Frame.NORMAL): 
 						setLocation(location);
-						if(Mediator.isMinimized()) {
+						if(Mediator.isMinimized()) 
 							mediator.unMinimize();
-							return;
-						}
 						break;
 				}
 			}

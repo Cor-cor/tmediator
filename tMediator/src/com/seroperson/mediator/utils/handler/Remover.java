@@ -44,12 +44,10 @@ public class Remover extends ChangeHandler {
 			if(!getScreen().isAnimated()) {
 				iterator.remove();
 				remLabels.remove();
+				continue;
 			}
 			else
 				remLabels.addAction(Actions.sequence(Actions.fadeOut(getScreen().getSpeed()), Actions.run(runnable), Actions.removeActor()));
-
-			if(!getScreen().isAnimated())
-				continue;
 
 			final Iterator<Entry<Player, Table>> inner = getScreen().getLabelMap().entrySet().iterator();
 
@@ -66,4 +64,9 @@ public class Remover extends ChangeHandler {
 		return isFinished();
 	}
 
+	@Override
+	protected boolean isFinished() {
+		return super.isFinished() && getScreen().getActionsSize() == 0;
+	}
+	
 }

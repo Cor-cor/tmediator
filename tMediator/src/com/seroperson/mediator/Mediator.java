@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.seroperson.mediator.rubash.Logotype;
+import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.settings.SettingsLoader;
 import com.seroperson.mediator.tori.stuff.Global;
@@ -166,6 +167,10 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 	@Override
 	public void minimize() {
 		minimized = true;
+		OnlineList scr = ((OnlineList)getScreen());
+		scr.setAnimation(false);	
+		scr.render(Integer.MAX_VALUE); // fast action clearing
+		//TODO refactoring?
 	}
 
 	@Override

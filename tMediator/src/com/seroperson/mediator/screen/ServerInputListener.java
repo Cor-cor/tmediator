@@ -25,7 +25,8 @@ public class ServerInputListener extends InputListener {
 				if(list.getServerViewer() == null)
 					list.setServerViewer(new ServerViewer(list));
 				final Server s = Mediator.getServerByRoom(player.getServer().getRoom(), list.getServers());
-				list.getServerViewer().add(s, s.getRoom(), true);
+				if(s != null)
+					list.getServerViewer().add(s, s.getRoom(), true);
 			}
 		};
 	}

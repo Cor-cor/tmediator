@@ -92,7 +92,6 @@ public class Refresher extends TimerTask {
 
 	private String getNPServers() throws Throwable {
 		socket = new Socket(getSettings().getServer(), getSettings().getPort());
-		socket.setSoTimeout(5000);
 		final Scanner reader = new Scanner(new InputStreamReader(socket.getInputStream()));
 		final StringBuilder builder = new StringBuilder();
 
@@ -163,8 +162,9 @@ public class Refresher extends TimerTask {
 	 * 3 - wanted
 	 */
 	private static int handle(final Player p, final String[] clans, final Collection<Player> alreadyChecked, final Collection<String> wanted) {
-		if(wanted.contains(p))
-			return 3;
+		for(String wname : wanted)
+			if(wname.equalsIgnoreCase(p.getName())) // TODO remove?
+				return 3;
 		if(alreadyChecked.contains(p))
 			return 2;
 		if(p.getClan().equals(Parser.CNONE))
