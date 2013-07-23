@@ -54,9 +54,8 @@ public class MediatorDesktop extends JFrame {
 		final int h = 360/2;
 		final CustomizableRoundRectangle2D crr = new CustomizableRoundRectangle2D(0f, 0f, w, h, 15, 0, 0, 15);
 		
-		if(!System.getProperties().contains("java.net.preferIPv4Stack"))
-			if(System.getProperty("java.net.preferIPv4Stack").equals("false"))
-				System.setProperty("java.net.preferIPv4Stack", "true");
+		if(!System.getProperties().contains("java.net.preferIPv4Stack") || System.getProperty("java.net.preferIPv4Stack").equals("false"))
+			System.setProperty("java.net.preferIPv4Stack", "true");		
 		
 		addComponentListener(new ComponentAdapter() {
 			@Override
