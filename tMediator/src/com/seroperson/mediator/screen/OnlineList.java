@@ -55,6 +55,7 @@ public class OnlineList extends ScreenAdapter {
 	private final Map<Player, Table> labels;
 	private final Array<SelectableLabel> colored = new Array<SelectableLabel>();
 	private final SelectableLabelGroup group = new SelectableLabelGroup();
+	private int previousSortingFlag = -Integer.MAX_VALUE;
 	private ServerViewer serverviewer;
 
 	private final ChangeHandler[] handlers = new ChangeHandler[] { new Remover(this), new Updater(this), new Adder(this), new Sorter(this) };
@@ -280,9 +281,11 @@ public class OnlineList extends ScreenAdapter {
 		boolean mark = false;
 		int i = 0;
 
-		sort = false;
+		sort = !(previousSortingFlag == getSettings().getSortingType());
 		animation = !Mediator.isMinimized();
 
+		previousSortingFlag = getSettings().getSortingType();
+		
 		for(final Player player : toList) {
 			int index = -1;
 			int i2 = 0;

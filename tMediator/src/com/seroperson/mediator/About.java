@@ -45,7 +45,7 @@ public class About extends JFrame {
 	
 	private final static ImageIcon im = new ImageIcon(About.class.getResource("/skin/logotype_small.png"));
 	private final int w = 360;
-	private final int h = 260/2;
+	private final int h = 280/2;
 	private final Dimension button = new Dimension(w, 15);
 
 	public About() {
@@ -74,7 +74,7 @@ public class About extends JFrame {
 	private Component initCenterPanel() {
 		final Box panel = Box.createVerticalBox();
 		final Font font = new Font("Arial", Font.BOLD, 10);
-		final boolean[] isbutton = new boolean[] { false, false, true, true, true, true };
+		final boolean[] isbutton = new boolean[] { false, false, true, true, true, true, true };
 		int buttonindex = 0;
 		for(int index = 0; index < text.length; index++) {
 			Component label;
