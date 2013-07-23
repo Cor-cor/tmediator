@@ -57,7 +57,7 @@ public class Refresher extends TimerTask {
 
 		}
 		catch (final Throwable e) {
-			mediator.handleThrow(e);
+			mediator.handleNetThrow(e);
 		}
 	}
 
@@ -66,7 +66,6 @@ public class Refresher extends TimerTask {
 		connection.connect();
 		final Scanner reader = new Scanner(new InputStreamReader(connection.getInputStream()));
 		final StringBuilder builder = new StringBuilder();
-
 		try {
 			while(reader.hasNextLine()) {
 				final String str = reader.nextLine();
@@ -111,7 +110,7 @@ public class Refresher extends TimerTask {
 
 	public static List<Player> getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv) {
 		final List<Player> online = new ArrayList<Player>();
-		final Collection<String> caught = new ArrayList<String>(Arrays.asList(allplayers));
+		final List<String> caught = new ArrayList<String>(Arrays.asList(allplayers));
 
 		Collection<Server> viewer = null;
 		Collection<Server> added = null;
@@ -161,10 +160,14 @@ public class Refresher extends TimerTask {
 	 * 2 - already & clan
 	 * 3 - wanted
 	 */
-	private static int handle(final Player p, final String[] clans, final Collection<Player> alreadyChecked, final Collection<String> wanted) {
-		for(String wname : wanted)
-			if(wname.equalsIgnoreCase(p.getName())) // TODO remove?
+	private static int handle(final Player p, final String[] clans, final Collection<Player> alreadyChecked, final List<String> wanted) {
+		for(int index = 0; index < wanted.size(); index++) {
+			String wname = wanted.get(index);
+			if(wname.equalsIgnoreCase(p.getName())) { 
+				wanted.remove(index);
 				return 3;
+			}
+		}
 		if(alreadyChecked.contains(p))
 			return 2;
 		if(p.getClan().equals(Parser.CNONE))

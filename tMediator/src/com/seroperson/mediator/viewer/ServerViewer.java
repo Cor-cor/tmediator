@@ -45,7 +45,7 @@ public class ServerViewer extends JFrame {
 	public ServerViewer(final OnlineList list) {
 		setTitle(this.getClass().getSimpleName());
 		this.list = list;
-		final String[][] str = new String[][] { new String[] { "Desc: ", "Room: ", "Mod: ", "Adress: " }, new String[] { "desc", "room", "mod", "adress" } };
+		final String[][] str = new String[][] { new String[] { "Desc: ", "Room: ", "Mod: ", "Address: " }, new String[] { "desc", "room", "mod", "address" } };
 		final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -164,7 +164,7 @@ public class ServerViewer extends JFrame {
 			labels.get("desc").setText(" - ");
 			labels.get("room").setText(" - ");
 			labels.get("mod").setText(" - ");
-			labels.get("adress").setText(" - ");
+			labels.get("address").setText(" - ");
 			jsps.setViewportView(players);
 			jsp.revalidate();
 			return;
@@ -173,7 +173,7 @@ public class ServerViewer extends JFrame {
 		labels.get("desc").setText(server.getDesc());
 		labels.get("room").setText(server.getRoom());
 		labels.get("mod").setText(server.getMod());
-		labels.get("adress").setText(server.getAdress());
+		labels.get("address").setText(server.getAddress());
 
 		for(final Player player : server.getPlayers()) {
 			final Box playerBox = Box.createHorizontalBox();

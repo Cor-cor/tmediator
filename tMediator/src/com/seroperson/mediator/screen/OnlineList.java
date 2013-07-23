@@ -3,7 +3,6 @@ package com.seroperson.mediator.screen;
 import static com.seroperson.mediator.Mediator.getSettings;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +33,7 @@ import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
 import com.seroperson.mediator.utils.SelectableLabel;
+import com.seroperson.mediator.utils.SelectableLabelGroup;
 import com.seroperson.mediator.utils.handler.Adder;
 import com.seroperson.mediator.utils.handler.ChangeHandler;
 import com.seroperson.mediator.utils.handler.Remover;
@@ -54,6 +54,7 @@ public class OnlineList extends ScreenAdapter {
 	private final Skin skin = new Skin(Gdx.files.internal("skin/skin.json"));
 	private final Map<Player, Table> labels;
 	private final Array<SelectableLabel> colored = new Array<SelectableLabel>();
+	private final SelectableLabelGroup group = new SelectableLabelGroup();
 	private ServerViewer serverviewer;
 
 	private final ChangeHandler[] handlers = new ChangeHandler[] { new Remover(this), new Updater(this), new Adder(this), new Sorter(this) };
@@ -145,21 +146,6 @@ public class OnlineList extends ScreenAdapter {
 		main.left();
 		main.top();
 		
-		main.addListener(new InputListener() {
-
-			@Override
-			public boolean touchDown(final InputEvent event, final float x, final float y, final int pointer, final int button) {
-				final Collection<Table> label = labels.values();
-				for(final Table table : label)
-					for(final Actor lab : table.getChildren()) {
-						((SelectableLabel)lab).clearSelection();
-					}
-				return false;
-				// TODO to selectablelabel
-			}
-
-		});
-
 		main.setName("Main table");
 		
 		scrp.setScrollingDisabled(false, false);
@@ -243,7 +229,7 @@ public class OnlineList extends ScreenAdapter {
 		return animation;
 	}
 
-	public void setAnimation(boolean a) { 
+	public synchronized void setAnimation(boolean a) { 
 		animation = a;
 	}
 	
@@ -353,7 +339,7 @@ public class OnlineList extends ScreenAdapter {
 									}
 								};
 
-								game.getTimer().schedule(task, 10000); // TODO settings?
+								game.getTimer().schedule(task, 10000);
 
 							}
 					}
@@ -399,7 +385,7 @@ public class OnlineList extends ScreenAdapter {
 			labels.put(player, current);
 
 			for(int i = 0; i < 2; i++) {
-				final SelectableLabel label = new SelectableLabel("", skin);
+				final SelectableLabel label = new SelectableLabel("", skin, group);
 				if(animation) {
 					label.setColor(Color.GREEN);
 					label.getColor().g = 0.7f;
@@ -414,12 +400,11 @@ public class OnlineList extends ScreenAdapter {
 		field = (SelectableLabel)labels.get(player).getChildren().get(index);
 
 		field.clearListeners();
-		field.addListener(field.getDefaultListener());
+		field.addListener(field.getDefaultClickListener());
 		if(index == 1)
 			field.addListener(getListener(player));
 
 		final Runnable runnable = new Runnable() {
-
 			@Override
 			public void run() {
 				field.setText(text);

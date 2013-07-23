@@ -1,15 +1,13 @@
 package com.seroperson.mediator.tori.stuff;
 
-import java.util.Date;
-
 public class Global {
 
 	private final String message;
 	private final String server;
 	private final String player;
-	private final Date date;
+	private final long date;
 
-	public Global(final String message, final Date date, final String server, final String player) {
+	public Global(final String message, final long date, final String server, final String player) {
 		this.message = message;
 		this.date = date;
 		this.server = server;
@@ -28,7 +26,7 @@ public class Global {
 		return player;
 	}
 
-	public Date getDate() {
+	public long getDate() {
 		return date;
 	}
 

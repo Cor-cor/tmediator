@@ -3,9 +3,7 @@ package com.seroperson.mediator.parsing;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -28,9 +26,10 @@ public class Parser {
 	private final static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	private final static String TORIBASH = "TORIBASH";
 	private final static String REGEXP_SERVER = "([\\d{1,3}\\.]+):(\\d{1,})\\s(\\p{ASCII}+)";
-	private final static String REGEXP_CLIENT = "[^\\s]+[(\\w)[^\\s]]"; // TODO ...
+	private final static String REGEXP_CLIENT = "[^\\s]+\\w"; 
 	private final static String REGEXP_MOD = "[^\\s]+\\.tbm";
 	private final static String REGEXP_COLORS = "\\^\\d{2}+";
+	private final static char[][] limiters = new char[][] { new char[] { '[', ']' }, new char[] { '(', ')' } };
 	public final static String CNONE = "none";
 
 	public static Server[] getServers(final ThrowHandler th, final String npservers) {
@@ -53,18 +52,18 @@ public class Parser {
 	}
 
 	public static Global getGlobal(String npglobal) throws Throwable {
-		if(!npglobal.contains("latest_broadcast")) // TODO ... (?)
+		if(!npglobal.contains("latest_broadcast")) 
 			return null;
 
 		/* message may contain incorrect attribute for xml :c */
 		npglobal = npglobal.replaceAll("~<a href=\"member.php\\?u=\\d{0,9}\">+\\p{ASCII}+", "</div>");
 
+		final long date;
 		final DocumentBuilder docbuilder = factory.newDocumentBuilder();
 		final InputStream stream = new ByteArrayInputStream(npglobal.getBytes());
 		final String message;
 		final String player;
 		final String server;
-		final Date date;
 		final Document doc;
 
 		try {
@@ -80,8 +79,8 @@ public class Parser {
 		message = node.getTextContent().trim();
 		player = node.getAttributes().getNamedItem("data-username").getTextContent().trim();
 		server = node.getAttributes().getNamedItem("data-room").getTextContent().trim();
-		date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(node.getAttributes().getNamedItem("data-post_time").getTextContent().trim()); // TODO current time
-
+		date = System.currentTimeMillis();
+		
 		return new Global(message, date, server, player);
 	}
 
@@ -121,19 +120,23 @@ public class Parser {
 					players = new ArrayList<Player>(5);
 					while(matcher.find()) {
 						final String withclantag = matcher.group(0).trim();
+						char[] clanlimiters = null;
 						String withoutclantag = null;
 						String clantag = null;
-						if(withclantag.contains("[")) { // or "]"
-							final int oppos = withclantag.indexOf('[');
-							final int clpos = withclantag.indexOf(']'); // TODO as regex
-							clantag = withclantag.substring(oppos+1, clpos);
-							withoutclantag =  withclantag.substring(clpos+1).trim();
+						for(char[] lpack : limiters) { 
+							if(withclantag.charAt(0) == lpack[0]) {
+								final int clpos = withclantag.indexOf(lpack[1]); // TODO as regex
+								clantag = withclantag.substring(1, clpos);
+								withoutclantag =  withclantag.substring(clpos+1).trim();
+								clanlimiters = lpack;
+								break;
+							}
 						}
-						else {
+						if(clantag == null) {
 							clantag = CNONE;
 							withoutclantag = withclantag;
 						}
-						players.add(new Player(withoutclantag, clantag, null));
+						players.add(new Player(withoutclantag, clantag, null, clanlimiters));
 					}
 				}
 

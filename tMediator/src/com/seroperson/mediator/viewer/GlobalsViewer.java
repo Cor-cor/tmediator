@@ -9,7 +9,6 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.SimpleDateFormat;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -28,8 +27,6 @@ import com.seroperson.mediator.tori.stuff.Server;
 
 @SuppressWarnings("serial")
 public class GlobalsViewer extends JFrame {
-
-	// TODO refactoring (?)
 
 	private Global[] globals;
 	private final int factor = 360;
@@ -90,13 +87,13 @@ public class GlobalsViewer extends JFrame {
 		c.add(scroll, BorderLayout.CENTER);
 	}
 
-	public static class AnotherColor extends DefaultTableCellRenderer.UIResource {
+	public class AnotherColor extends DefaultTableCellRenderer.UIResource {
 
-		private static final Color gray = new Color(0.7f, 0.7f, 0.7f, 0.2f);
-		private static final Color white = Color.white;
+		private final Color gray = new Color(0.7f, 0.7f, 0.7f, 0.2f);
+		private final Color white = Color.white;
 		private Font fontMod;
 
-		{
+		public AnotherColor() {
 			fontMod = getFont().deriveFont(Font.BOLD);
 			setOpaque(true);
 			setHorizontalAlignment(SwingConstants.CENTER);
@@ -137,7 +134,6 @@ public class GlobalsViewer extends JFrame {
 
 		public TModel(final Global[] globals, final int index) {
 			this.globals = globals;
-			final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			int dindex = index;
 
 			if(dindex < 10)
@@ -153,7 +149,10 @@ public class GlobalsViewer extends JFrame {
 				o[0] = g.getMessage();
 				o[1] = g.getPlayer();
 				o[2] = g.getServer();
-				o[3] = sdf.format(g.getDate()); // TODO ... minutes ago
+				long globaltime = g.getDate();
+				long currentTime = System.currentTimeMillis();
+				long diff = currentTime - globaltime;
+				o[3] = new StringBuilder(Long.toString(diff /= 1000*60)).append(" minutes ago").toString(); 
 			}
 
 		}

@@ -6,13 +6,16 @@ public class Player {
 
 	private final String name;
 	private final String clan;
+	private final char[] clanlimiters;
 	private String namewithclantag;
+	private String nameforsorting;
 	private Server server;
 
-	public Player(final String name, final String clan, final Server server) {
+	public Player(final String name, final String clan, final Server server, char[] clanlimiters) {
 		this.name = name.trim();
 		this.clan = clan.trim();
 		this.server = server;
+		this.clanlimiters = clanlimiters;
 	}
 
 	public String getName() {
@@ -26,7 +29,11 @@ public class Player {
 	public void setServer(final Server server) {
 		this.server = server;
 	}
-
+		
+	public char[] getClanLimiters() {
+		return clanlimiters;
+	}
+	
 	public String getClan() {
 		return clan;
 	}
@@ -39,17 +46,21 @@ public class Player {
 	public String getNameWithClanTag() {
 		if(namewithclantag != null)
 			return namewithclantag;
-
+		final char[] climiters = getClanLimiters();
 		final StringBuilder pl = new StringBuilder();
 
-		if(getClan().equals(Parser.CNONE))
+		if(getClan() == Parser.CNONE)
 			pl.append(getName());
 		else
-			pl.append("[").append(getClan()).append("] ").append(getName());
-
-		namewithclantag = pl.toString();
-
-		return namewithclantag;
+			pl.append(climiters[0]).append(getClan()).append(climiters[1]).append(' ').append(getName());
+		
+		return namewithclantag = pl.toString();
+	}
+	
+	public String getNameForSorting() { 
+		if(nameforsorting != null)
+			return nameforsorting;
+		return nameforsorting = new StringBuilder(getClan() == Parser.CNONE ? String.valueOf(Character.MAX_VALUE) : getClan()).append(' ').append(getName()).toString();
 	}
 
 	@Override

@@ -27,17 +27,16 @@ public class Sorter extends ChangeHandler {
 			int result = 1;
 			switch(getSettings().getSortingType()) {
 				case 0:
-					result = o1.getNameWithClanTag().compareToIgnoreCase(o2.getNameWithClanTag());
-					return result == 0 ? -1 : result;
+					result = o1.getNameForSorting().compareToIgnoreCase(o2.getNameForSorting());
+					break;
 				case 1:
 					result = o1.getName().compareToIgnoreCase(o2.getName());
-					return result == 0 ? -1 : result;
+					break;
 				case 2:
-					final int l1 = o1.getNameWithClanTag().length();
-					final int l2 = o2.getNameWithClanTag().length();
-					return l1 < l2 ? 1 : l1 > l2 ? -1 : 1;
+					result = o1.getServer().getRoom().compareToIgnoreCase(o2.getServer().getRoom());
+					break;
 			}
-			return 0;
+			return result == 0 ? -1 : result;
 		}
 	};
 
@@ -83,9 +82,8 @@ public class Sorter extends ChangeHandler {
 		int cindex = oldorder.get(player);
 		int nindex = neworder.indexOf(player);
 		if(!counter.remove(player) || cindex == nindex) {
-			if(counter.size() != 0) {
+			if(counter.size() != 0) 
 				replace(oldorder.findKey(cindex+1, true), oldorder, neworder, counter);
-			}
 			return;
 		}
 		

@@ -50,9 +50,8 @@ public class MediatorDesktop extends JFrame {
 	
 	public MediatorDesktop() { 
 		super("tMediator");
-		int scale = 2;
-		final int w = 360/scale;
-		final int h = 360/scale;
+		final int w = 360/2;
+		final int h = 360/2;
 		final CustomizableRoundRectangle2D crr = new CustomizableRoundRectangle2D(0f, 0f, w, h, 15, 0, 0, 15);
 
 		addComponentListener(new ComponentAdapter() {
@@ -63,15 +62,14 @@ public class MediatorDesktop extends JFrame {
 		});
 		
 		final TrayIcon tray = initTray();
-    	    
 		final JFrame frame = this;
 		
-		mediator = new com.seroperson.mediator.Mediator(scale) {
+		mediator = new com.seroperson.mediator.Mediator() {
 			
 			@Override
 			public void unMinimize() { 
 				super.unMinimize();
-				setVisible(true); // TODO in listener?
+				setVisible(true);
 				setExtendedState(Frame.NORMAL);
 			}
 			
@@ -82,13 +80,12 @@ public class MediatorDesktop extends JFrame {
 			}
 			
 			@Override
+			public void handleNetThrow(final Throwable t) {
+				tray.displayMessage("tMediator connection error", t.getMessage(), MessageType.ERROR);
+			}
+			
+			@Override
 			public void handleThrow(final Throwable t) { 
-				if(t.getClass().equals(java.net.ConnectException.class) ||
-				(t.getClass().equals(java.io.IOException.class) && 
-			     t.getMessage().contains("response code"))) {  // TODO connections errors
-					tray.displayMessage("tMediator error", t.getMessage(), MessageType.ERROR);
-					return;
-				}
 				mediator.getTimer().cancel();
 				frame.dispose();
 				
@@ -114,8 +111,8 @@ public class MediatorDesktop extends JFrame {
 		LwjglAWTCanvas canvas = new LwjglAWTCanvas(mediator, false);
 				
 		c.add(canvas.getCanvas());
-		c.setBackground(new Color(.9f, .9f, .9f, 1)); // TODO move to mediator
-		c.setBorder(new ShapeStrokeBorder(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.5f), crr, new Color(0.7f, 0.7f, 0.7f, 0.7f))); /* borders - brainfuck */
+		c.setBackground(new Color(.9f, .9f, .9f, 1));
+		c.setBorder(new ShapeStrokeBorder(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.5f), crr, new Color(0.7f, 0.7f, 0.7f, 0.7f)));
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         addWindowStateListener(getWindowListener());
@@ -150,8 +147,7 @@ public class MediatorDesktop extends JFrame {
 	}
 	
 	private WindowStateListener getWindowListener() { 
-		return new WindowStateListener() {
-						
+		return new WindowStateListener() {					
 			@Override
 			public void windowStateChanged(WindowEvent e) { 
 				switch(e.getNewState()) { 
@@ -168,8 +164,7 @@ public class MediatorDesktop extends JFrame {
 						setFocusableWindowState(true);
 						break;
 				}
-			}
-						           
+			}		           
         };
 	}
 	
@@ -212,7 +207,7 @@ public class MediatorDesktop extends JFrame {
             	new com.seroperson.mediator.viewer.GlobalsViewer(mediator.getGlobals(), (OnlineList)currentScreen, lastIndex);            
             }
         });
-                        
+                            
         final CheckboxMenuItem ontop = new CheckboxMenuItem("Over all windows", true);
         ontop.addItemListener(new ItemListener() {
 			@Override

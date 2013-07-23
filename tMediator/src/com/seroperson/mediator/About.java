@@ -30,6 +30,7 @@ public class About extends JFrame {
 		"http://www.gnu.org/copyleft/gpl.txt",
 		"https://github.com/seroperson/tmediator",
 		"http://vk.com/seroperson",
+		"http://forum.toribash.com/showthread.php?t=415548",
 		"http://forum.toribash.com/private.php?do=newpm&u=3029412",
 		"http://forum.toribash.com/forumdisplay.php?f=446" };
 	
@@ -39,6 +40,7 @@ public class About extends JFrame {
 		"Distributed under GNU General Public License",
 		"Visit github repository",
 		"Visit author page",
+		"Official thread on forum.toribash.com",
 		"Report an error" };
 	
 	private final static ImageIcon im = new ImageIcon(About.class.getResource("/skin/logotype_small.png"));
@@ -59,7 +61,7 @@ public class About extends JFrame {
 
 		final Container c = getContentPane();
 		final Box left = Box.createVerticalBox();
-		final JButton rubash = createLink(new JButton(im), link[4]);
+		final JButton rubash = createLink(new JButton(im), link[link.length-1]);
 		final JPanel center = new JPanel();
 
 		center.add(initCenterPanel(), BorderLayout.CENTER);

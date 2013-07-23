@@ -42,7 +42,7 @@ public class Server {
 		return room;
 	}
 
-	public String getAdress() {
+	public String getAddress() {
 		return new StringBuilder(host).append(":").append(String.valueOf(port)).toString();
 	}
 

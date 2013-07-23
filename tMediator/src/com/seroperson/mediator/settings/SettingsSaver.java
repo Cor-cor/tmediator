@@ -69,7 +69,7 @@ public class SettingsSaver extends JFrame {
 		final JLabel label = new JLabel("Sorting: ");
 		final Box radiobuttons = Box.createHorizontalBox();
 		final ButtonGroup bgroup = new ButtonGroup();
-		final JRadioButton[] radioarray = new JRadioButton[] { new JRadioButton("By clan"), new JRadioButton("By name"), new JRadioButton("By string length"), new JRadioButton("Disable") };
+		final JRadioButton[] radioarray = new JRadioButton[] { new JRadioButton("By clan"), new JRadioButton("By name"), new JRadioButton("By room"), new JRadioButton("Disable") };
 
 		radiobuttons.add(label);
 

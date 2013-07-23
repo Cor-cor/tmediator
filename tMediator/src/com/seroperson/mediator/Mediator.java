@@ -16,7 +16,6 @@ import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.settings.SettingsLoader;
 import com.seroperson.mediator.tori.stuff.Global;
-import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
 import com.seroperson.mediator.utils.CaseListener;
 import com.seroperson.mediator.utils.ThrowHandler;
@@ -25,6 +24,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 	// TODO (!) rewrite without libgdx
 
+	private static final String version = "0.11-beta";
 	private static final Interpolation interpolation = Interpolation.circle;
 	private static final ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
 	private static boolean minimized = false;
@@ -32,16 +32,14 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 	private static Texture skinTexture;
 	private static Settings settings;
 	private final Timer timer;
-	private final float scale;
 	private Server[] servers;
 	private Global[] globals = new Global[5];
 
-	public Mediator(final float scale) {
-		this(scale, false);
+	public Mediator() {
+		this(false);
 	}
 
-	private Mediator(final float scale, final boolean debug) {
-		this.scale = scale;
+	private Mediator(final boolean debug) {
 		Mediator.debug = debug;
 		timer = new Timer("Timer", true);
 	}
@@ -58,7 +56,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 		Gdx.graphics.setVSync(false);
 
-		setScreen(new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), scale));
+		setScreen(new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), 2));
 	}
 
 	@Override
@@ -72,7 +70,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return settings;
 	}
 
-	public static void setSettings(final Settings s) {
+	public synchronized static void setSettings(final Settings s) {
 		settings = s;
 	}
 
@@ -88,7 +86,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return debug;
 	}
 
-	public static boolean isMinimized() {
+	public static synchronized boolean isMinimized() {
 		return minimized;
 	}
 
@@ -101,6 +99,10 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 	public static Interpolation getInterpolation() { 
 		return interpolation;
+	}
+	
+	public static String getVersion() { 
+		return version;
 	}
 	
 	public Global[] getGlobals() {
@@ -140,16 +142,6 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		this.servers = servers;
 	}
 
-	public Player getPlayer(final String name) {
-		for(final Server server : servers) {
-			for(final Player player : server.getPlayers()) {
-				if(player.getName().equalsIgnoreCase(name))
-					return player;
-			}
-		}
-		return null;
-	}
-
 	public Timer getTimer() {
 		return timer;
 	}
@@ -167,6 +159,10 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 	@Override
 	public void minimize() {
 		minimized = true;
+		
+		if(getScreen().getClass() != OnlineList.class)
+			return;
+		
 		OnlineList scr = ((OnlineList)getScreen());
 		scr.setAnimation(false);	
 		scr.render(Integer.MAX_VALUE); // fast action clearing
@@ -179,6 +175,10 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 	@Override
 	public void handleGlobal(final Global g) {
+	}
+	
+	@Override
+	public void handleNetThrow(final Throwable t) { 
 	}
 
 }

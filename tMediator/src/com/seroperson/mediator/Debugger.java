@@ -2,7 +2,6 @@ package com.seroperson.mediator;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -42,7 +41,7 @@ public class Debugger extends InputAdapter {
 		final String clan = /*randomizer.nextBoolean() ?*/clans[randomizer.nextInt(clans.length)]/* : Parser.CNONE*/;
 		final String name = names[randomizer.nextInt(names.length)];
 		final String room = rooms[randomizer.nextInt(rooms.length)];
-		final Player newplayer = new Player(name, clan, new Server("", room, "", null, null, 0));
+		final Player newplayer = new Player(name, clan, new Server("", room, "", null, null, 0), null);
 		
 		if(players.contains(newplayer))	// TODO filter like a Refresher
 			return getRandomPlayer();
@@ -105,7 +104,7 @@ public class Debugger extends InputAdapter {
 				players.add(nextrandom);
 				break;
 			case Keys.G: // global
-				list.getGame().addGlobal(new Global("New global here", new Date(System.currentTimeMillis()), nextrandom.getServer().getRoom(), nextrandom.getName()));
+				list.getGame().addGlobal(new Global("New global here", System.currentTimeMillis(), nextrandom.getServer().getRoom(), nextrandom.getName()));
 				break;
 			case Keys.ESCAPE:
 				Gdx.app.exit();

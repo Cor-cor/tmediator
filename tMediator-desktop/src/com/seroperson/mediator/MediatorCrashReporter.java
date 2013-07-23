@@ -21,8 +21,6 @@ import javax.swing.WindowConstants;
 
 @SuppressWarnings("serial")
 public class MediatorCrashReporter extends JFrame {
-
-	// TODO submit to my email ?
 	
 	public MediatorCrashReporter(Throwable t) throws Throwable {
 		setTitle("tMediator crash report");
