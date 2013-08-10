@@ -61,6 +61,7 @@ public class Refresher extends ServerHandler {
 
 	protected Server[] getServers() throws Throwable {
 		socket = new Socket(getSettings().getServer(), getSettings().getPort());
+		
 		final Scanner reader = new Scanner(new InputStreamReader(socket.getInputStream()));
 		final StringBuilder builder = new StringBuilder();
 
@@ -106,15 +107,17 @@ public class Refresher extends ServerHandler {
 			}
 		
 			for(final Player player : server.getPlayers()) PEach: {
-				
-				for(int index = 0; index < rooms.size(); index++) {
-					String room = rooms.get(index);
-					if(room.equalsIgnoreCase(server.getRoom())) {
-						rooms.remove(index);	
-						online.addAll(Arrays.asList(server.getPlayers()));
-						break PEach;
+
+					for(int index = 0; index < rooms.size(); index++) {
+						String room = rooms.get(index);
+						if(room == null)
+							break;
+						if(room.equalsIgnoreCase(server.getRoom())) {
+							rooms.remove(index);	
+							online.addAll(Arrays.asList(server.getPlayers()));
+							break PEach;
+						}
 					}
-				}
 				
 				if(handle(player, clans, online, caught))
 						online.add(player);
