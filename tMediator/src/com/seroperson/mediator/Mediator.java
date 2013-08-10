@@ -18,17 +18,19 @@ import com.seroperson.mediator.settings.SettingsLoader;
 import com.seroperson.mediator.tori.stuff.Global;
 import com.seroperson.mediator.tori.stuff.Server;
 import com.seroperson.mediator.utils.CaseListener;
+import com.seroperson.mediator.utils.ServerHandler;
 import com.seroperson.mediator.utils.ThrowHandler;
 
 public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 	// TODO (!) rewrite without libgdx
 
-	private static final String version = "0.11-beta";
+	private static final String version = "0.12-beta";
 	private static final Interpolation interpolation = Interpolation.circle;
 	private static final ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
 	private static boolean minimized = false;
 	private static boolean debug;
+	private static boolean crashed;
 	private static Texture skinTexture;
 	private static Settings settings;
 	private final Timer timer;
@@ -42,13 +44,12 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 	private Mediator(final boolean debug) {
 		Mediator.debug = debug;
 		timer = new Timer("Timer", true);
+		settings = SettingsLoader.getSettings(this);
 	}
 
 	@Override
 	public void create() {
-
-		settings = SettingsLoader.getSettings(this);
-
+		
 		skinTexture = new Texture(Gdx.files.internal("skin/skin.png"));
 		buttons.put("minimize", new TextureRegion(Mediator.getSkinTexture(), 0, 0, 15, 15));
 		buttons.put("close", new TextureRegion(Mediator.getSkinTexture(), 17, 0, 15, 15));
@@ -56,7 +57,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 		Gdx.graphics.setVSync(false);
 
-		setScreen(new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), 2));
+		setScreen(settings.isShowingLogotype() ? new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), 2) : Logotype.initList(this));
 	}
 
 	@Override
@@ -146,6 +147,16 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return timer;
 	}
 
+	public ServerHandler getPreferredServerHandler(OnlineList list) {
+		try {
+			return new Refresher(this, list);
+		}
+		catch (Throwable e) {
+			handleThrow(e);
+		}
+		return null;
+	}
+	
 	@Override
 	public void dispose() {
 		getScreen().dispose();
@@ -171,6 +182,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 	@Override
 	public void handleThrow(final Throwable t) {
+		crashed = true;
 	}
 
 	@Override
@@ -181,4 +193,8 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 	public void handleNetThrow(final Throwable t) { 
 	}
 
+	public boolean isCrashed() {
+		return crashed;
+	}
+	
 }

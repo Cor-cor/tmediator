@@ -171,8 +171,8 @@ public class Parser {
 					p.setServer(server);
 				return new Object[] { server, new Boolean(descnull) };
 			}
-
-			throw new ParseException(new StringBuilder("Parse error; \n").append(currentStr).toString(), fullStr.indexOf(currentStr));
+			int index = fullStr.indexOf(currentStr);
+			throw new ParseException(new StringBuilder("Parse error; \n").append(currentStr).append("\n ").append(String.valueOf(index)).toString(), index);
 
 		}
 	}

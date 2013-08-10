@@ -85,7 +85,6 @@ public class MediatorCrashReporter extends JFrame {
 		panel.add(button, BorderLayout.NORTH);
 		panel.add(area, BorderLayout.CENTER);
 		getContentPane().add(scrollpane);
-		getContentPane().revalidate();
 	}
 	
 }

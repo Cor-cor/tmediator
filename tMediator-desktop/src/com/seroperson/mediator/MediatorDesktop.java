@@ -36,9 +36,11 @@ import javax.swing.WindowConstants;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.backends.lwjgl.LwjglAWTCanvas;
+import com.badlogic.gdx.math.Vector2;
 import com.seroperson.mediator.awt.CustomizableRoundRectangle2D;
 import com.seroperson.mediator.awt.ShapeStrokeBorder;
 import com.seroperson.mediator.screen.OnlineList;
+import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.tori.stuff.Global;
 
 @SuppressWarnings("serial")
@@ -52,18 +54,7 @@ public class MediatorDesktop extends JFrame {
 		super("tMediator");
 		final int w = 360/2;
 		final int h = 360/2;
-		final CustomizableRoundRectangle2D crr = new CustomizableRoundRectangle2D(0f, 0f, w, h, 15, 0, 0, 15);
-		
-		if(!System.getProperties().contains("java.net.preferIPv4Stack") || System.getProperty("java.net.preferIPv4Stack").equals("false"))
-			System.setProperty("java.net.preferIPv4Stack", "true");		
-		
-		addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				setShape(crr);
-			}
-		});
-		
+			
 		final TrayIcon tray = initTray();
 		final JFrame frame = this;
 		
@@ -89,7 +80,8 @@ public class MediatorDesktop extends JFrame {
 			
 			@Override
 			public void handleThrow(final Throwable t) { 
-				mediator.getTimer().cancel();
+				super.handleThrow(t);
+				getTimer().cancel();
 				frame.dispose();
 				
 				try {
@@ -105,24 +97,45 @@ public class MediatorDesktop extends JFrame {
 			}
 
 		};		
-		 
+		
+		if(mediator.isCrashed())
+			return;
+		
         setIconImage(icon);
 	    setExtendedState(Frame.NORMAL);
 	    setUndecorated(true);	 
 	    
 	    JComponent c = (JComponent)getContentPane();  
 		LwjglAWTCanvas canvas = new LwjglAWTCanvas(mediator, false);
-				
+		
+		Settings settings = Mediator.getSettings();
+		Float[] shape = settings.getShapeSettings();
+		
+		final CustomizableRoundRectangle2D crr = new CustomizableRoundRectangle2D(0f, 0f, w, h, shape[0], shape[1], shape[2], shape[3]);
+		
+		if(!System.getProperties().contains("java.net.preferIPv4Stack") || System.getProperty("java.net.preferIPv4Stack").equals("false"))
+			System.setProperty("java.net.preferIPv4Stack", "true");		
+
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				com.sun.awt.AWTUtilities.setWindowShape(MediatorDesktop.this, crr);
+			}
+		});
+		
 		c.add(canvas.getCanvas());
 		c.setBackground(new Color(.9f, .9f, .9f, 1));
 		c.setBorder(new ShapeStrokeBorder(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.5f), crr, new Color(0.7f, 0.7f, 0.7f, 0.7f)));
-
+		
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         addWindowStateListener(getWindowListener());
         addWindowListener(getWindowListener(tray));
                
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-		location.setLocation(d.width-w, d.height-h-getTaskBarHeight()+4f);
+		Vector2 custompos = settings.getPosition();
+		float x = custompos.x > d.width-w ? d.width-w : custompos.x;
+		float y = custompos.y > d.height-h ? d.height-h-getTaskBarHeight()+4f : custompos.y;
+		location.setLocation(x, y);
 		setSize(w, h);
 		setLocation(location);
 		setVisible(true);

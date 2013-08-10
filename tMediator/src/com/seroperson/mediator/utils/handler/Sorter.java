@@ -56,8 +56,12 @@ public class Sorter extends ChangeHandler {
 	}
 
 	public void sort() {
-		// TODO refactoring
+		
 		final Map<Player, Table> labels = getScreen().getLabelMap();
+		
+		if(labels.size() <= 1)
+			return;
+		
 		final ObjectMap<Player, Integer> sorted = new ObjectMap<Player, Integer>();
 		final List<Player> needed = getScreen().getPlayersInList();
 		Collections.sort(needed, getPlayerComparator());

@@ -1,8 +1,6 @@
 package com.seroperson.mediator;
 
 import static com.seroperson.mediator.Mediator.getSettings;
-import static com.seroperson.mediator.parsing.Parser.getGlobal;
-import static com.seroperson.mediator.parsing.Parser.getServers;
 
 import java.io.InputStreamReader;
 import java.net.Socket;
@@ -13,55 +11,27 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
-import java.util.TimerTask;
 
 import com.seroperson.mediator.parsing.Parser;
 import com.seroperson.mediator.screen.OnlineList;
+import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.tori.stuff.Global;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
+import com.seroperson.mediator.utils.ServerHandler;
 import com.seroperson.mediator.viewer.ServerViewer;
 
-public class Refresher extends TimerTask {
+public class Refresher extends ServerHandler {
 
 	private Socket socket;
-	private final OnlineList onlinelist;
-	private final Mediator mediator;
 	private final URL forum;
 
-	public Refresher(final Mediator m, final OnlineList list) throws Throwable {
-		onlinelist = list;
-		mediator = m;
+	public Refresher(final Mediator mediator, final OnlineList list) throws Throwable {
+		super(list, mediator);
 		forum = new URL(getSettings().getForumURI());
 	}
 
-	@Override
-	public void run() {
-		try {
-
-			mediator.setServers(getServers(mediator, getNPServers()));
-			onlinelist.refresh(getPlayersOnline(mediator.getServers(), getSettings().getNames(), getSettings().getClans(), onlinelist.getServerViewer()));
-
-			Globals: {
-
-				if(!getSettings().isGlobalsTracking())
-					break Globals;
-				final Global current = getGlobal(getNPGlobal());
-				if(current == null)
-					break Globals;
-				final Global last = mediator.getLastGlobal();
-				if(last == null || !current.getMessage().equalsIgnoreCase(last.getMessage()))
-					mediator.addGlobal(current);
-
-			}
-
-		}
-		catch (final Throwable e) {
-			mediator.handleNetThrow(e);
-		}
-	}
-
-	private String getNPGlobal() throws Throwable {
+	protected Global getGlobal() throws Throwable {
 		final URLConnection connection = forum.openConnection();
 		connection.connect();
 		final Scanner reader = new Scanner(new InputStreamReader(connection.getInputStream()));
@@ -86,10 +56,10 @@ public class Refresher extends TimerTask {
 			reader.close();
 		}
 
-		return builder.toString();
+		return Parser.getGlobal(builder.toString());
 	}
 
-	private String getNPServers() throws Throwable {
+	protected Server[] getServers() throws Throwable {
 		socket = new Socket(getSettings().getServer(), getSettings().getPort());
 		final Scanner reader = new Scanner(new InputStreamReader(socket.getInputStream()));
 		final StringBuilder builder = new StringBuilder();
@@ -105,15 +75,20 @@ public class Refresher extends TimerTask {
 			reader.close();
 		}
 
-		return builder.toString();
+		return Parser.getServers(getMediator(), builder.toString());
 	}
 
-	public static List<Player> getPlayersOnline(final Server[] servers, final String[] allplayers, final String[] clans, final ServerViewer siv) {
+	protected List<Player> getPlayersOnline(final Server[] servers) {
+		final Settings settings = getSettings();
+		final ServerViewer siv = getOnlineList().getServerViewer();
 		final List<Player> online = new ArrayList<Player>();
-		final List<String> caught = new ArrayList<String>(Arrays.asList(allplayers));
-
+		final List<String> clans = new ArrayList<String>(Arrays.asList(settings.getClans()));
+		final List<String> caught = new ArrayList<String>(Arrays.asList(settings.getNames()));
+		final List<String> rooms = new ArrayList<String>(Arrays.asList(settings.getRooms()));
+		
 		Collection<Server> viewer = null;
 		Collection<Server> added = null;
+		
 		if(siv != null) {
 			viewer = siv.getServers();
 			added = new ArrayList<Server>(viewer.size());
@@ -129,13 +104,20 @@ public class Refresher extends TimerTask {
 					added.add(server);
 				}
 			}
-
-			for(final Player player : server.getPlayers()) {
-				switch(handle(player, clans, online, caught)) {
-					case 0:
-					case 3:
-						online.add(player);
+		
+			for(final Player player : server.getPlayers()) PEach: {
+				
+				for(int index = 0; index < rooms.size(); index++) {
+					String room = rooms.get(index);
+					if(room.equalsIgnoreCase(server.getRoom())) {
+						rooms.remove(index);	
+						online.addAll(Arrays.asList(server.getPlayers()));
+						break PEach;
+					}
 				}
+				
+				if(handle(player, clans, online, caught))
+						online.add(player);
 			}
 		}
 
@@ -151,31 +133,6 @@ public class Refresher extends TimerTask {
 		}
 
 		return online;
-	}
-
-	/**
-	 * -1 none
-	 * 0 - online & clan
-	 * 1 - s offline & clan;
-	 * 2 - already & clan
-	 * 3 - wanted
-	 */
-	private static int handle(final Player p, final String[] clans, final Collection<Player> alreadyChecked, final List<String> wanted) {
-		for(int index = 0; index < wanted.size(); index++) {
-			String wname = wanted.get(index);
-			if(wname.equalsIgnoreCase(p.getName())) { 
-				wanted.remove(index);
-				return 3;
-			}
-		}
-		if(alreadyChecked.contains(p))
-			return 2;
-		if(p.getClan().equals(Parser.CNONE))
-			return -1;
-		for(final String clan : clans)
-			if(clan.equalsIgnoreCase(p.getClan()))
-				return 0;
-		return 1;
 	}
 
 }

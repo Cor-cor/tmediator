@@ -6,8 +6,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import com.seroperson.mediator.utils.ThrowHandler;
 
@@ -18,24 +16,25 @@ public class SettingsLoader {
 			final File settingsfile = getSettingsFile();
 			return readSettingsFromFile(settingsfile);
 		}
-		catch (final IOException e) {
+		catch (final Throwable e) {
 			th.handleThrow(e);
 		}
 		return null;
 	}
 
 	public static File getSettingsFile() throws IOException {
-		final FileHandle directory = Gdx.files.external("tmediator");
+		final String home = System.getProperty("user.home", "");
+		final String tmediator = new StringBuilder(home).append("/tmediator").toString();
+		final File directory = new File(tmediator);
 		if(!directory.exists()) {
 			directory.mkdirs();
 		}
-		final FileHandle settings = Gdx.files.external("tmediator/settings.dat");
-		final File settingsfile = settings.file();
+		final File settings = new File(new StringBuilder(tmediator).append("/settings.dat").toString());
 		if(!settings.exists()) {
-			settingsfile.createNewFile();
-			writeSettingsToFile(Settings.getDefaultSettings(), settingsfile);
+			settings.createNewFile();
+			writeSettingsToFile(Settings.getDefaultSettings(), settings);
 		}
-		return settingsfile;
+		return settings;
 	}
 
 	public static Settings readSettingsFromFile(final File file) throws IOException {
@@ -61,7 +60,7 @@ public class SettingsLoader {
 			if(file.canWrite()) {
 				final Json json = new Json();
 				w = new FileWriter(file);
-				w.write(json.toJson(settings));
+				w.write(json.prettyPrint(settings));
 			}
 		}
 		finally {

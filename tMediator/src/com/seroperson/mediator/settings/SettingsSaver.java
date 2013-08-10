@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,6 +40,7 @@ public class SettingsSaver extends JFrame {
 	private final List<JTextComponent> players = new ArrayList<JTextComponent>();
 	private boolean globals;
 	private boolean minimizeAct;
+	private boolean showlogo;
 	private int sort;
 	private final int w = 380;
 	private final int h = 260;
@@ -56,15 +58,13 @@ public class SettingsSaver extends JFrame {
 
 		globals = current.isGlobalsTracking();
 		minimizeAct = current.isMinimizeAction();
-
+		showlogo = current.isShowingLogotype();
+		
 		final Component clans = createEditorPanel(settings.getClans(), this.clans);
 		final Component players = createEditorPanel(settings.getNames(), this.players);
 
 		final Container c = getContentPane();
-		c.setLayout(new BorderLayout());
-
 		final Box top = Box.createVerticalBox();
-
 		final Box radio = Box.createHorizontalBox();
 		final JLabel label = new JLabel("Sorting: ");
 		final Box radiobuttons = Box.createHorizontalBox();
@@ -84,15 +84,19 @@ public class SettingsSaver extends JFrame {
 		radioarray[current.getSortingType()].setSelected(true);
 		radio.add(radiobuttons);
 
-		final Box check = Box.createHorizontalBox();
-		final JCheckBox globals = new JCheckBox("Track globals", current.isGlobalsTracking());
-		final JCheckBox minimizeAct = new JCheckBox("Notify about new players", current.isMinimizeAction());
-
+		final JPanel check = new JPanel();
+		check.setLayout(new FlowLayout());
+		final JCheckBox globals = new JCheckBox("Track globals", this.globals);
+		final JCheckBox minimizeAct = new JCheckBox("Notify about new players", this.minimizeAct);
+		final JCheckBox showlogo = new JCheckBox("Show logotype on start", this.showlogo);
+		
 		globals.addItemListener(getItemListener(1));
 		minimizeAct.addItemListener(getItemListener(2));
+		showlogo.addItemListener(getItemListener(3));
 
 		check.add(globals);
 		check.add(minimizeAct);
+		check.add(showlogo);
 
 		top.add(check);
 		top.add(radio);
@@ -118,6 +122,7 @@ public class SettingsSaver extends JFrame {
 		c.add(jsp, BorderLayout.CENTER);
 		c.add(top, BorderLayout.NORTH);
 		c.add(save, BorderLayout.SOUTH);
+		pack();
 	}
 
 	private ActionListener getActionListener() {
@@ -136,12 +141,16 @@ public class SettingsSaver extends JFrame {
 
 			@Override
 			public void itemStateChanged(final ItemEvent e) {
+				boolean value =  !(e.getItemSelectable().getSelectedObjects() == null);
 				switch(index) {
 					case 1:
-						globals = !(e.getItemSelectable().getSelectedObjects() == null);
+						globals = value;
 						break;
 					case 2:
-						minimizeAct = !(e.getItemSelectable().getSelectedObjects() == null);
+						minimizeAct = value;
+						break;
+					case 3:
+						showlogo = value;
 						break;
 				}
 			}
@@ -187,6 +196,7 @@ public class SettingsSaver extends JFrame {
 	private JTextField createTextField(final String text, final Box box, final List<JTextComponent> list) {
 		final Box boxfield = Box.createHorizontalBox();
 		final JTextField field = new JTextField(text, 10);
+		field.setMaximumSize(new Dimension((int) field.getMaximumSize().getWidth(), (int) field.getMinimumSize().getHeight()));
 		field.setCaretPosition(0);
 		final JButton delete = new JButton("-");
 		delete.addActionListener(new ActionListener() {
@@ -223,13 +233,17 @@ public class SettingsSaver extends JFrame {
 		def.names = players.toArray(new String[players.size()]);
 		def.unminimizeonnewplayer = minimizeAct;
 		def.globals = globals;
+		def.showlogo = showlogo;
 		def.padBottom = current.getPadBottom();
 		def.padLeft = current.getPadLeft();
 		def.period = current.getPeriod();
 		def.server = current.getServer();
 		def.port = current.getPort();
+		def.rooms = current.getRooms();
 		def.sort = sort;
 		def.uri = current.getForumURI();
+		def.round = current.getShapeSettings();
+		def.position = current.getPosition();
 		final Settings settings = new Settings(def);
 		try {
 			SettingsLoader.writeSettingsToFile(settings, SettingsLoader.getSettingsFile());
