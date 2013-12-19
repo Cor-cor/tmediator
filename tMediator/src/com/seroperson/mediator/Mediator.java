@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.seroperson.mediator.rubash.Logotype;
 import com.seroperson.mediator.screen.OnlineList;
@@ -18,7 +19,6 @@ import com.seroperson.mediator.settings.SettingsLoader;
 import com.seroperson.mediator.tori.stuff.Global;
 import com.seroperson.mediator.tori.stuff.Server;
 import com.seroperson.mediator.utils.CaseListener;
-import com.seroperson.mediator.utils.ServerHandler;
 import com.seroperson.mediator.utils.ThrowHandler;
 
 public class Mediator extends Game implements CaseListener, ThrowHandler {
@@ -28,13 +28,14 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 	private static final String version = "0.12-beta";
 	private static final Interpolation interpolation = Interpolation.circle;
 	private static final ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
+	private static Skin skin;
 	private static boolean minimized = false;
 	private static boolean debug;
 	private static boolean crashed;
+	private static Server[] servers;
 	private static Texture skinTexture;
 	private static Settings settings;
 	private final Timer timer;
-	private Server[] servers;
 	private Global[] globals = new Global[5];
 
 	public Mediator() {
@@ -57,7 +58,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 		Gdx.graphics.setVSync(false);
 
-		setScreen(settings.isShowingLogotype() ? new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), 2) : Logotype.initList(this));
+		setScreen(/*settings.isShowingLogotype() ? new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), 2) : */Logotype.initList(this));
 	}
 
 	@Override
@@ -135,26 +136,20 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return globals[index];
 	}
 
-	public Server[] getServers() {
+	public static Server[] getServers() {
 		return servers;
 	}
 
-	public void setServers(final Server[] servers) {
-		this.servers = servers;
+	public static Skin getSkin() { 
+		return skin == null ? skin = new Skin(Gdx.files.internal("skin/skin.json")) : skin;
+	}
+	
+	public static void setServers(final Server[] servers) {
+		Mediator.servers = servers;
 	}
 
 	public Timer getTimer() {
 		return timer;
-	}
-
-	public ServerHandler getPreferredServerHandler(OnlineList list) {
-		try {
-			return new Refresher(this, list);
-		}
-		catch (Throwable e) {
-			handleThrow(e);
-		}
-		return null;
 	}
 	
 	@Override

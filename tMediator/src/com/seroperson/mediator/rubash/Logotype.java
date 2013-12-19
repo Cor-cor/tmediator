@@ -1,7 +1,6 @@
 package com.seroperson.mediator.rubash;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -12,7 +11,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.seroperson.mediator.Debugger;
 import com.seroperson.mediator.Mediator;
-import com.seroperson.mediator.screen.OnlineList;
+import com.seroperson.mediator.refresh.ServerHandler;
+import com.seroperson.mediator.screen.MainScreen;
 import com.seroperson.mediator.screen.ScreenAdapter;
 
 public class Logotype extends ScreenAdapter {
@@ -66,7 +66,7 @@ public class Logotype extends ScreenAdapter {
 			case Out: {
 				color.a -= outSpeed;
 				if(color.a  <= 0) {
-					mediator.setScreen(Logotype.initList(mediator));
+					mediator.setScreen(initList(mediator));
 					dispose();
 					return;
 				}
@@ -81,12 +81,11 @@ public class Logotype extends ScreenAdapter {
 	}
 	
 	public static Screen initList(Mediator mediator) {
-		final OnlineList list = new OnlineList(mediator);
-		if(Mediator.isDebug()) {
-			Gdx.input.setInputProcessor(new InputMultiplexer(new Debugger(list), list.getMainTable().getStage()));
-			return list;
-		}
-		mediator.getTimer().schedule(mediator.getPreferredServerHandler(list), 0, Mediator.getSettings().getPeriod());
+		final MainScreen list = new Debugger(mediator);//new OnlineList(mediator);
+		Gdx.input.setInputProcessor(list.getInputProcessor());
+		ServerHandler handler = list.getServerHandler();
+		if(handler != null)
+			mediator.getTimer().schedule(handler, 0, Mediator.getSettings().getPeriod());
 		return list;
 	}
 

@@ -3,21 +3,22 @@ package com.seroperson.mediator.utils.handler;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.tori.stuff.Player;
+import com.seroperson.mediator.screen.list.VisualList;
+
 
 public abstract class ChangeHandler {
 
 	private final Collection<Player> changequeue;
-	private final OnlineList screen;
+	private final VisualList list;
 	private boolean started;
 
-	public ChangeHandler(final OnlineList screen) {
-		changequeue = setList();
-		this.screen = screen;
+	public ChangeHandler(final VisualList screen) {
+		changequeue = initList();
+		this.list = screen;
 	}
 
-	protected Collection<Player> setList() {
+	protected Collection<Player> initList() {
 		return new ArrayList<Player>();
 	}
 
@@ -25,12 +26,12 @@ public abstract class ChangeHandler {
 		return changequeue.size() == 0;
 	}
 
-	protected Collection<Player> getList() {
+	public Collection<Player> getList() {
 		return changequeue;
 	}
 
-	protected OnlineList getScreen() {
-		return screen;
+	protected VisualList getVisualList() {
+		return list;
 	}
 
 	public void add(final Player player) {
@@ -43,10 +44,9 @@ public abstract class ChangeHandler {
 	}
 
 	public boolean start() {
-		if(started)
-			return false;
-		else
+		if(!started)
 			return started = true;
+		return false;
 	}
 
 }

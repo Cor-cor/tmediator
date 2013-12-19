@@ -1,8 +1,9 @@
 package com.seroperson.mediator.screen;
 
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 
-public class ScreenAdapter implements Screen {
+public class ScreenAdapter extends InputAdapter implements Screen {
 
 	@Override
 	public void render(final float delta) {

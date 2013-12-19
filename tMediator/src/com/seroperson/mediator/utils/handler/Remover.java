@@ -6,18 +6,13 @@ import java.util.Map.Entry;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.seroperson.mediator.Mediator;
-import com.seroperson.mediator.screen.OnlineList;
+import com.seroperson.mediator.screen.list.VisualList;
 import com.seroperson.mediator.tori.stuff.Player;
 
 public class Remover extends ChangeHandler {
 
-	public Remover(final OnlineList screen) {
-		super(screen);
-	}
-
-	@Override
-	public void reset() {
-		super.reset();
+	public Remover(final VisualList list) {
+		super(list);
 	}
 
 	@Override
@@ -31,7 +26,7 @@ public class Remover extends ChangeHandler {
 		final Iterator<Player> iterator = getList().iterator();
 		while(iterator.hasNext()) {
 			final Player player = iterator.next();
-			final Table remLabels = getScreen().getLabelMap().remove(player);
+			final Table remLabels = getVisualList().getLabelMap().remove(player);
 
 			final Runnable runnable = new Runnable() {
 
@@ -41,15 +36,9 @@ public class Remover extends ChangeHandler {
 				}
 			};
 
-			if(!getScreen().isAnimated()) {
-				iterator.remove();
-				remLabels.remove();
-				continue;
-			}
-			else
-				remLabels.addAction(Actions.sequence(Actions.fadeOut(getScreen().getSpeed()), Actions.run(runnable), Actions.removeActor()));
+			remLabels.addAction(Actions.sequence(Actions.fadeOut(/*getVisualList().getSpeed()*/.5f), Actions.run(runnable), Actions.removeActor()));
 
-			final Iterator<Entry<Player, Table>> inner = getScreen().getLabelMap().entrySet().iterator();
+			final Iterator<Entry<Player, Table>> inner = getVisualList().getLabelMap().entrySet().iterator();
 
 			while(inner.hasNext()) {
 				final Entry<Player, Table> entry = inner.next();
@@ -57,7 +46,7 @@ public class Remover extends ChangeHandler {
 				if(getList().contains(entry.getKey()))
 					continue;
 				if(labels.getY() < remLabels.getY())
-					labels.addAction(Actions.moveBy(0, labels.getHeight(), getScreen().getSpeed(), Mediator.getInterpolation()));
+					labels.addAction(Actions.moveBy(0, labels.getHeight(), /*getVisualList().getSpeed()*/.5f, Mediator.getInterpolation()));
 			}
 		}
 
@@ -66,7 +55,7 @@ public class Remover extends ChangeHandler {
 
 	@Override
 	protected boolean isFinished() {
-		return super.isFinished() && getScreen().getActionsSize() == 0;
+		return super.isFinished() && !getVisualList().isInAction();
 	}
 	
 }

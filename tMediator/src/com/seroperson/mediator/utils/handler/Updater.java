@@ -1,12 +1,12 @@
 package com.seroperson.mediator.utils.handler;
 
-import com.seroperson.mediator.screen.OnlineList;
+import com.seroperson.mediator.screen.list.VisualList;
 import com.seroperson.mediator.tori.stuff.Player;
 
 public class Updater extends ChangeHandler {
 
-	public Updater(final OnlineList screen) {
-		super(screen);
+	public Updater(final VisualList list) {
+		super(list);
 	}
 
 	@Override
@@ -15,7 +15,7 @@ public class Updater extends ChangeHandler {
 			return isFinished();
 
 		for(final Player player : getList())
-			getScreen().updateServer(player);
+			getVisualList().updateServer(player);
 
 		getList().clear();
 
@@ -24,7 +24,7 @@ public class Updater extends ChangeHandler {
 
 	@Override
 	public boolean isFinished() {
-		return super.isFinished() && getScreen().getActionsSize() == 0;
+		return super.isFinished() && !getVisualList().isInAction();
 	}
 
 }

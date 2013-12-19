@@ -16,7 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.esotericsoftware.tablelayout.Cell;
 import com.seroperson.mediator.Mediator;
-import com.seroperson.mediator.screen.OnlineList;
+import com.seroperson.mediator.screen.list.VisualList;
 import com.seroperson.mediator.tori.stuff.Player;
 
 public class Sorter extends ChangeHandler {
@@ -39,34 +39,46 @@ public class Sorter extends ChangeHandler {
 			return result == 0 ? -1 : result;
 		}
 	};
+	
+	private boolean sort = false;
 
-	public Sorter(final OnlineList screen) {
-		super(screen);
+	public Sorter(final VisualList list) {
+		super(list);
 	}
 
 	@Override
 	public boolean start() {
 		if(!super.start())
 			return isFinished();
-
-		if(getScreen().needToSort())
+		
+//		if(sort)
 			sort();
-
+		
+//		sort = false;
+		
 		return isFinished();
 	}
 
+	public boolean needSort() { 
+		return sort;
+	}
+	
+	public void setSort(boolean sort) { 
+		this.sort = sort;
+	}
+	
 	public void sort() {
 		
-		final Map<Player, Table> labels = getScreen().getLabelMap();
+		final Map<Player, Table> labels = getVisualList().getLabelMap();
 		
 		if(labels.size() <= 1)
 			return;
 		
 		final ObjectMap<Player, Integer> sorted = new ObjectMap<Player, Integer>();
-		final List<Player> needed = getScreen().getPlayersInList();
+		final List<Player> needed = new ArrayList<Player>(getVisualList().getLabelMap().keySet());
 		Collections.sort(needed, getPlayerComparator());
 		
-		final float tableHeight = getScreen().getMainTable().getHeight();
+		final float tableHeight = getVisualList().getHeight();
 		final float pad = getSettings().getPadBottom()*2;
 		final Iterator<Entry<Player, Table>> iterator = labels.entrySet().iterator();
 		while(iterator.hasNext()) {
@@ -75,7 +87,6 @@ public class Sorter extends ChangeHandler {
 		}
 		List<Player> counter = new ArrayList<Player>(needed);
 		replace(sorted.findKey(0, true), sorted, needed, counter);
-
 	}
 		
 	public static Comparator<Player> getPlayerComparator() {
@@ -91,11 +102,11 @@ public class Sorter extends ChangeHandler {
 			return;
 		}
 		
-		Actor actor = getScreen().getLabelMap().get(player);	
+		Actor actor = getVisualList().getLabelMap().get(player);	
 		push(cindex, nindex, actor);
 		
 		Player next = oldorder.findKey(nindex, true);
-		setCell(getScreen().getLabelMap().get(player), getScreen().getMainTable().getCell(getScreen().getLabelMap().get(next)));
+		setCell(getVisualList().getLabelMap().get(player), getVisualList().getCell(getVisualList().getLabelMap().get(next)));
 		replace(next, oldorder, neworder, counter);
 		
 	}
@@ -110,10 +121,7 @@ public class Sorter extends ChangeHandler {
 			if(cindex > nindex)
 				amount = actor.getHeight()*(cindex-nindex);
 		
-		if(getScreen().isAnimated()) 
-			actor.addAction(Actions.sequence(Actions.moveBy(0, amount, getScreen().getSpeed(), Mediator.getInterpolation())));
-		else 
-			actor.translate(0, amount);
+		actor.addAction(Actions.sequence(Actions.moveBy(0, amount, /*getVisualList().getSpeed()*/.5f, Mediator.getInterpolation())));
 		
 	}
 
@@ -128,7 +136,7 @@ public class Sorter extends ChangeHandler {
 	
 	@Override
 	protected boolean isFinished() {
-		return getScreen().getActionsSize() == 0;
+		return !getVisualList().isInAction();
 	}
 
 }

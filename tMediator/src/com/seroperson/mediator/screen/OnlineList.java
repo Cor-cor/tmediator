@@ -1,78 +1,70 @@
 package com.seroperson.mediator.screen;
 
 import static com.seroperson.mediator.Mediator.getSettings;
+import static com.seroperson.mediator.Mediator.getSkin;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TimerTask;
 
 import javax.swing.SwingUtilities;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.seroperson.mediator.Mediator;
+import com.seroperson.mediator.refresh.RefreshHandler;
+import com.seroperson.mediator.refresh.Refresher;
+import com.seroperson.mediator.refresh.ServerHandler;
+import com.seroperson.mediator.screen.list.AnimatedList;
 import com.seroperson.mediator.tori.stuff.Player;
-import com.seroperson.mediator.tori.stuff.Server;
 import com.seroperson.mediator.utils.SelectableLabel;
-import com.seroperson.mediator.utils.SelectableLabelGroup;
 import com.seroperson.mediator.utils.handler.Adder;
 import com.seroperson.mediator.utils.handler.ChangeHandler;
+import com.seroperson.mediator.utils.handler.Colored;
 import com.seroperson.mediator.utils.handler.Remover;
 import com.seroperson.mediator.utils.handler.Sorter;
 import com.seroperson.mediator.utils.handler.Updater;
 import com.seroperson.mediator.viewer.ServerViewer;
+import com.seroperson.mediator.viewer.ServerViewerContainer;
 
-public class OnlineList extends ScreenAdapter {
+public class OnlineList extends MainScreen implements RefreshHandler, ServerViewerContainer {
 
-	private List<Player> inList = new ArrayList<Player>();
-
-	private final float speed = 0.5f;
+	private final float speed = 0.5f; // TODO to settings
 	private final float colorSpeed = Mediator.isDebug() ? 1 : 0.15f;
 
-	private final Table main;
-	private final Mediator game;
 	private final Stage stage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-	private final Skin skin = new Skin(Gdx.files.internal("skin/skin.json"));
-	private final Map<Player, Table> labels;
+	private final Mediator game;
 	private final Array<SelectableLabel> colored = new Array<SelectableLabel>();
-	private final SelectableLabelGroup group = new SelectableLabelGroup();
 	private int previousSortingFlag = -Integer.MAX_VALUE;
 	private ServerViewer serverviewer;
 
-	private final ChangeHandler[] handlers = new ChangeHandler[] { new Remover(this), new Updater(this), new Adder(this), new Sorter(this) };
+	private final AnimatedList list = new AnimatedList(this);
+	
+	private final Sorter sorter = new Sorter(list);
+	private final ChangeHandler[] handlers = new ChangeHandler[] { new Remover(list), new Updater(list), new Adder(list), new Colored(list), sorter };
 	private int state = handlers.length;
-
-	private boolean animation = false;
-	private boolean sort = false;
 	
 	public OnlineList(final Mediator game) {
 		this.game = game;
-
-		labels = new HashMap<Player, Table>();
-		main = new Table();
 		
-		final ScrollPane scrp = new ScrollPane(main, skin);
+		final ScrollPane scrp = new ScrollPane(list, getSkin());
 
-		final Button toTray = new Button(skin);
+		final Button toTray = new Button(getSkin());
 		toTray.add(new Image(Mediator.getRegion("minimize")));
 		toTray.addListener(new ChangeListener() {
 
@@ -82,7 +74,7 @@ public class OnlineList extends ScreenAdapter {
 			}
 		});
 
-		final Button close = new Button(skin);
+		final Button close = new Button(getSkin());
 		close.add(new Image(Mediator.getRegion("close")));
 		close.addListener(new ChangeListener() {
 
@@ -96,7 +88,7 @@ public class OnlineList extends ScreenAdapter {
 		final TextureRegion leftR = new TextureRegion(Mediator.getRegion("back"));
 		leftR.flip(true, false);
 
-		final Button right = new Button(skin);
+		final Button right = new Button(getSkin());
 		right.add(new Image(rightR));
 		right.addListener(new ChangeListener() {
 
@@ -107,7 +99,7 @@ public class OnlineList extends ScreenAdapter {
 
 		});
 
-		final Button left = new Button(skin);
+		final Button left = new Button(getSkin());
 		left.add(new Image(leftR));
 		left.addListener(new ChangeListener() {
 
@@ -138,17 +130,7 @@ public class OnlineList extends ScreenAdapter {
 		winbuttons.add(close).padTop(5f).padRight(5f);
 		winbuttons.addListener(getFadeTableListener(winbuttons));
 		winbuttons.setName("Window buttons");
-		
-		main.padLeft(getSettings().getPadLeft());
-		main.padTop(getSettings().getPadBottom());
-		main.padRight(getSettings().getPadLeft());
-		main.padBottom(getSettings().getPadBottom());
-		main.align(Align.left);
-		main.left();
-		main.top();
-		
-		main.setName("Main table");
-		
+						
 		scrp.setScrollingDisabled(false, false);
 		scrp.setFillParent(true);
 		scrp.setFlickScroll(false);
@@ -162,41 +144,44 @@ public class OnlineList extends ScreenAdapter {
 
 	@Override
 	public void show() {
-		main.addAction(Actions.fadeIn(getSpeed()));
-		Gdx.input.setInputProcessor(stage);
+		list.addAction(Actions.fadeIn(speed));
+	}
+	
+	@Override
+	public ServerHandler getServerHandler() {
+		Refresher r = null;
+		try {
+			r = new Refresher(game, this, this);
+		}
+		catch(Throwable e) { }
+		return r;
+	}
+	
+	@Override
+	public InputProcessor getInputProcessor() {
+		return new InputMultiplexer(stage, this);
 	}
 
 	@Override
 	public synchronized void render(final float delta) {
 		
 		/* TODO as actions? */
-		for(int i = 0; i < colored.size; i++) {
-			final SelectableLabel label = colored.get(i);
-			if(label.getColor().g > 0) 
-				label.getColor().sub(0, delta*colorSpeed, 0, 0);
-			
-			if(label.getColor().g <= 0) {
-				label.getColor().set(Color.BLACK);
-				colored.removeValue(label, true);
-				i--;
-			}
-		}
-		
 		if(state != handlers.length) {
-			while(state <= handlers.length-1) 
+			while(state != handlers.length) {
 				if(handlers[state].start()) {
 					state++;
-					main.layout();
+					list.layout();
 				}
 				else
 					break;
+			}
 		}
 		else {
 			try {
 				Thread.sleep(20);
 			}
 			catch (final InterruptedException e) {
-				getGame().handleThrow(e);
+				game.handleThrow(e);
 			}
 		}
 		
@@ -214,58 +199,15 @@ public class OnlineList extends ScreenAdapter {
 		stage.dispose();
 	}
 
-	public int getColoredLabelsSize() {
-		return colored.size;
-	}
-	
-	public int getState() {
-		return state;
-	}
-
-	public int getActionsSize() {
-		return getActionsSize(stage.getRoot(), 0);
-	}
-	
-	public boolean isAnimated() {
-		return animation;
-	}
-
 	public synchronized void setAnimation(boolean a) { 
-		animation = a;
+		// set speed to 0;
+		
 	}
 	
-	public boolean needToSort() { 
-		return sort;
-	}
-	
-	public Map<Player, Table> getLabelMap() {
-		return labels;
-	}
-
-	public float getSpeed() {
-		return speed;
-	}
-	
-	public Mediator getGame() {
-		return game;
-	}
-
-	public List<Player> getPlayersInList() {
-		return inList;
-	}
-
-	public Server[] getServers() {
-		return getGame().getServers();
-	}
-
 	public ServerViewer getServerViewer() {
 		return serverviewer;
 	}
-	
-	public Table getMainTable() {
-		return main;
-	}
-	
+		
 	public void setServerViewer(final ServerViewer serverviewer) {
 		this.serverviewer = serverviewer;
 	}
@@ -275,14 +217,14 @@ public class OnlineList extends ScreenAdapter {
 		for(final ChangeHandler handler : handlers)
 			handler.reset();
 
+		final List<Player> inList = new ArrayList<Player>(list.getLabelMap().keySet());
 		final List<Player> toList = new ArrayList<Player>(players);
 		final IntMap<Integer> indexes = new IntMap<Integer>();
 		final int[] cases = new int[toList.size()];
 		boolean mark = false;
 		int i = 0;
 
-		sort = !(previousSortingFlag == getSettings().getSortingType());
-		animation = !Mediator.isMinimized();
+		sorter.setSort(!(previousSortingFlag == getSettings().getSortingType()));
 
 		previousSortingFlag = getSettings().getSortingType();
 		
@@ -301,9 +243,7 @@ public class OnlineList extends ScreenAdapter {
 			cases[i++] = index;
 			if(index == -1) {
 				if(getSettings().getSortingType() < 3)
-					sort = true;
-				if(getSettings().isMinimizeAction())
-					animation = true;
+					sorter.setSort(true);
 			}
 		}
 		i = 0;
@@ -347,6 +287,7 @@ public class OnlineList extends ScreenAdapter {
 							}
 					}
 					handlers[State.ADDING.getIndex()].add(player);
+					handlers[State.COLORING.getIndex()].add(player);
 					break;
 			}
 			i++;
@@ -368,69 +309,6 @@ public class OnlineList extends ScreenAdapter {
 		
 		state = State.REMOVING.getIndex();
 
-		inList = toList;
-	}
-
-	public SelectableLabel updateServer(final Player player) {
-		return updateLabel(player, 1, new StringBuilder().append(" on ").append(player.getServer().getRoom()).toString(), getSpeed(), null);
-	}
-
-	public SelectableLabel updatePlayer(final Player player) {
-		return updateLabel(player, 0, player.getNameWithClanTag(), getSpeed(), null);
-	}
-
-	private SelectableLabel updateLabel(final Player player, final int index, final String text, final float speed, final Runnable finish) {
-		final SelectableLabel field;
-
-		if(!labels.containsKey(player)) {
-			final Table current = new Table();
-			current.setName(player.getName()); 
-			labels.put(player, current);
-
-			for(int i = 0; i < 2; i++) {
-				final SelectableLabel label = new SelectableLabel("", skin, group);
-				if(animation) {
-					label.setColor(Color.GREEN);
-					label.getColor().g = 0.7f;
-					colored.add(label);
-				}
-				else
-					label.setColor(Color.BLACK);
-				current.add(label).align(Align.left);
-			}
-		}
-
-		field = (SelectableLabel)labels.get(player).getChildren().get(index);
-
-		field.clearListeners();
-		field.addListener(field.getDefaultClickListener());
-		if(index == 1)
-			field.addListener(getListener(player));
-
-		final Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				field.setText(text);
-			}
-		};
-
-		if(!animation) {
-			runnable.run();
-			if(finish != null)
-				finish.run();
-		}
-		else {
-			final SequenceAction sequence = Actions.sequence(Actions.fadeOut(getSpeed()), Actions.run(runnable), Actions.fadeIn(getSpeed()));
-			if(finish != null)
-				sequence.addAction(Actions.run(finish));
-			field.addAction(sequence);
-		}
-
-		return field;
-	}
-
-	private InputListener getListener(final Player player) {
-		return new ServerInputListener(this, player);
 	}
 
 	private InputListener getFadeTableListener(final Table table) {
@@ -439,33 +317,20 @@ public class OnlineList extends ScreenAdapter {
 
 			@Override
 			public void enter(final InputEvent event, final float x, final float y, final int pointer, final Actor fromActor) {
-				table.addAction(Actions.fadeIn(getSpeed() / 2));
+				table.addAction(Actions.fadeIn(speed / 2));
 			}
 
 			@Override
 			public void exit(final InputEvent event, final float x, final float y, final int pointer, final Actor toActor) {
-				table.addAction(Actions.fadeOut(getSpeed() / 2));
+				table.addAction(Actions.fadeOut(speed / 2));
 			}
 
 		};
-	}
-
-	/* incorrect implementation, but it works here */
-	private int getActionsSize(final Group group, int count) {
-		for(final Actor actor : group.getChildren()) {
-			count += actor.getActions().size;
-			if(actor instanceof Group) {
-				count += getActionsSize((Group) actor, count);
-			}
-			if(count > 0)
-				return count;
-		}
-		return count;
-	}
+	}	
 	
 	private enum State {
 
-		REMOVING(0), UPDATING(1), ADDING(2), SORTING(3), NOTHING(4);
+		REMOVING(0), UPDATING(1), ADDING(2), COLORING(3), SORTING(4);
 
 		int index;
 
@@ -479,4 +344,5 @@ public class OnlineList extends ScreenAdapter {
 
 	}
 
+	
 }

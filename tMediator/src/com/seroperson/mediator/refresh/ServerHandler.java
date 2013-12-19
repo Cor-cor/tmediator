@@ -1,4 +1,4 @@
-package com.seroperson.mediator.utils;
+package com.seroperson.mediator.refresh;
 
 import java.util.Collection;
 import java.util.List;
@@ -6,18 +6,17 @@ import java.util.TimerTask;
 
 import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.parsing.Parser;
-import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.tori.stuff.Global;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
 
 public abstract class ServerHandler extends TimerTask {
 
-	private final OnlineList list;
+	private final RefreshHandler handler;
 	private final Mediator mediator;
 	
-	protected ServerHandler(OnlineList list, Mediator mediator) { 
-		this.list = list;
+	protected ServerHandler(RefreshHandler handler, Mediator mediator) { 
+		this.handler = handler;
 		this.mediator = mediator;
 	}
 	
@@ -50,20 +49,19 @@ public abstract class ServerHandler extends TimerTask {
 		try {
 			
 			mediator.setServers(getServers());
-			list.refresh(getPlayersOnline(mediator.getServers()));
+			handler.refresh(getPlayersOnline(mediator.getServers()));
 			
-			Globals: {
-
-				if(!Mediator.getSettings().isGlobalsTracking())
-					break Globals;
-				final Global current = getGlobal();
-				if(current == null)
-					break Globals;
-				final Global last = mediator.getLastGlobal();
-				if(last == null || !current.getMessage().equalsIgnoreCase(last.getMessage()))
-					mediator.addGlobal(current);
-
-			}
+			if(!Mediator.getSettings().isGlobalsTracking())
+				return;
+			
+			final Global current = getGlobal();
+			
+			if(current == null)
+				return;
+			
+			final Global last = mediator.getLastGlobal();
+			if(last == null || !current.getMessage().equalsIgnoreCase(last.getMessage()))
+				mediator.addGlobal(current);
 
 		}
 		catch (final Throwable e) {
@@ -71,11 +69,7 @@ public abstract class ServerHandler extends TimerTask {
 		}
 		
 	}
-	
-	public OnlineList getOnlineList() {
-		return list;
-	}
-	
+		
 	public Mediator getMediator() { 
 		return mediator;
 	}

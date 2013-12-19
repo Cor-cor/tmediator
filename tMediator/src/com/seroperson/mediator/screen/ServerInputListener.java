@@ -7,26 +7,26 @@ import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
 import com.seroperson.mediator.viewer.ServerViewer;
+import com.seroperson.mediator.viewer.ServerViewerContainer;
 
 public class ServerInputListener extends InputListener {
 
 	private final Runnable runnable;
-	private final OnlineList list;
 	private final Player player;
 	private long counter;
 	private int click = 0;
 
-	public ServerInputListener(final OnlineList lst, final Player p) {
+	public ServerInputListener(final ServerViewerContainer container, final Player p) {
 		player = p;
-		list = lst;
 		runnable = new Runnable() {
 			@Override
 			public void run() {
-				if(list.getServerViewer() == null)
-					list.setServerViewer(new ServerViewer(list));
-				final Server s = Mediator.getServerByRoom(player.getServer().getRoom(), list.getServers());
+				ServerViewer viewer = container.getServerViewer();
+				if(viewer == null)
+					container.setServerViewer(viewer = new ServerViewer(container)); // TODO remove
+				final Server s = Mediator.getServerByRoom(player.getServer().getRoom(), Mediator.getServers());
 				if(s != null)
-					list.getServerViewer().add(s, s.getRoom(), true);
+					viewer.add(s, s.getRoom(), true);
 			}
 		};
 	}

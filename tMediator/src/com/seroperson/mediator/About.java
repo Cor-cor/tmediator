@@ -32,7 +32,8 @@ public class About extends JFrame {
 		"http://vk.com/seroperson",
 		"http://forum.toribash.com/showthread.php?t=415548",
 		"http://forum.toribash.com/private.php?do=newpm&u=3029412",
-		"http://forum.toribash.com/forumdisplay.php?f=446" };
+		"http://forum.toribash.com/forumdisplay.php?f=446" 
+	};
 	
 	private final static String[] text = new String[] {
 		"tMediator",
@@ -118,6 +119,7 @@ public class About extends JFrame {
 					}
 				}
 			}
+			
 		});
 
 		label.setBorderPainted(false);

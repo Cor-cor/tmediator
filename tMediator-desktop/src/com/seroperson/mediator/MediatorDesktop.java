@@ -56,7 +56,6 @@ public class MediatorDesktop extends JFrame {
 		final int h = 360/2;
 			
 		final TrayIcon tray = initTray();
-		final JFrame frame = this;
 		
 		mediator = new com.seroperson.mediator.Mediator() {
 			
@@ -82,7 +81,7 @@ public class MediatorDesktop extends JFrame {
 			public void handleThrow(final Throwable t) { 
 				super.handleThrow(t);
 				getTimer().cancel();
-				frame.dispose();
+				MediatorDesktop.this.dispose();
 				
 				try {
 					new MediatorCrashReporter(t);

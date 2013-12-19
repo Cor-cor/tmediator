@@ -26,14 +26,13 @@ import javax.swing.event.ChangeListener;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Values;
-import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
 
 public class ServerViewer extends JFrame {
 
 	private static final long serialVersionUID = 2725980927196323525L;
-	private final OnlineList list;
+	private final ServerViewerContainer container;
 	private final ObjectMap<String, JLabel> labels = new ObjectMap<String, JLabel>(3);
 	private final ObjectMap<String, Server> servers = new ObjectMap<String, Server>(10);
 	private final IntMap<String> indexmap = new IntMap<String>(10);
@@ -42,9 +41,9 @@ public class ServerViewer extends JFrame {
 	private final JSplitPane jsp;
 	private final JScrollPane jsps;
 
-	public ServerViewer(final OnlineList list) {
+	public ServerViewer(final ServerViewerContainer con) {
 		setTitle(this.getClass().getSimpleName());
-		this.list = list;
+		container = con;
 		final String[][] str = new String[][] { new String[] { "Desc: ", "Room: ", "Mod: ", "Address: " }, new String[] { "desc", "room", "mod", "address" } };
 		final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -78,6 +77,7 @@ public class ServerViewer extends JFrame {
 				if(indexmap.containsKey(tabbedpane.getSelectedIndex()))
 					update(tabbedpane.getSelectedIndex());
 			}
+			
 		});
 
 		jsps = new JScrollPane(players);
@@ -94,7 +94,7 @@ public class ServerViewer extends JFrame {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				if(tabbedpane.getTabCount() <= 1) {
-					list.setServerViewer(null);
+					container.setServerViewer(null);
 					setVisible(false);
 					dispose();
 					return;
@@ -107,6 +107,7 @@ public class ServerViewer extends JFrame {
 					indexmap.put(i, tabbedpane.getTitleAt(i));
 				update(tabbedpane.getSelectedIndex());
 			}
+			
 		});
 
 		c.add(jsp, BorderLayout.CENTER);
@@ -190,7 +191,7 @@ public class ServerViewer extends JFrame {
 
 			@Override
 			public void windowClosed(final WindowEvent e) {
-				list.setServerViewer(null);
+				container.setServerViewer(null);
 			}
 		};
 	}

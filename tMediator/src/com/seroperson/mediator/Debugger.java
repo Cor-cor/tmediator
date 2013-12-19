@@ -8,6 +8,7 @@ import java.util.Random;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
+import com.seroperson.mediator.refresh.ServerHandler;
 import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.tori.stuff.Global;
 import com.seroperson.mediator.tori.stuff.Player;
@@ -15,7 +16,7 @@ import com.seroperson.mediator.tori.stuff.Server;
 
 /* something like a "debugger" ._.
  * TODO */
-public class Debugger extends InputAdapter {
+public class Debugger extends OnlineList {
 
 	private final String[] names = new String[] { "Albert", "Nick", "Michael", "Jordan", "Robert", "John", "Huenos", "Eric", "Walter",
 			"Nilson", "Barny", "Jennifer", "Julia", "Ann", "Cameron", "Thomas", "James", "Nicholas",
@@ -24,24 +25,28 @@ public class Debugger extends InputAdapter {
 	private final String[] rooms = new String[] { "Tourney", "ClanWar", "MyAwesomeRoom", "Bar", "Club" };
 	private final List<Player> players = new ArrayList<Player>();
 	private final Random randomizer = new Random();
-	private final OnlineList list;
 
-	public Debugger(final OnlineList list) {
-		this(list, 5);
+	public Debugger(Mediator game) {
+		super(game);
 	}
 
-	public Debugger(final OnlineList list, final int scount) {
+	@Override
+	public ServerHandler getServerHandler() {
+		return null;
+	}
+	
+/*	public Debugger(final OnlineList list, final int scount) {
 		this.list = list;
 		for(int i = 0; i < scount; i++)
 			players.add(getRandomPlayer());
 		this.list.refresh(players);
-	}
+	}*/
 
 	private Player getRandomPlayer() {
 		final String clan = /*randomizer.nextBoolean() ?*/clans[randomizer.nextInt(clans.length)]/* : Parser.CNONE*/;
 		final String name = names[randomizer.nextInt(names.length)];
 		final String room = rooms[randomizer.nextInt(rooms.length)];
-		final Player newplayer = new Player(name, clan, new Server("", room, "", null, null, 0), null);
+		final Player newplayer = new Player(name, clan, new Server("", room, "", null, null, 0), new char[] { '[', ']' });
 		
 		if(players.contains(newplayer))	// TODO filter like a Refresher
 			return getRandomPlayer();
@@ -60,8 +65,8 @@ public class Debugger extends InputAdapter {
 
 	@Override
 	public boolean keyDown (final int keycode) {
-		if(list.getActionsSize() > 0)
-			return false;
+//		if(list.getActionsSize() > 0)
+//			return false;
 		final Player nextrandom = getRandomPlayer();
 
 		if(keycode > 243 && keycode < 255)
@@ -87,7 +92,7 @@ public class Debugger extends InputAdapter {
 					throw new NullPointerException("Test");
 				}
 				catch(Throwable t) {
-					list.getGame().handleThrow(t);
+//					list.getGame().handleThrow(t);
 					return false;
 				}
 			case Keys.N:
@@ -95,7 +100,7 @@ public class Debugger extends InputAdapter {
 					throw new ConnectException("Test");
 				}
 				catch(Throwable t) {				// Net error
-					list.getGame().handleThrow(t);
+//					list.getGame().handleThrow(t);
 					return false;
 				}
 			case Keys.D: // double
@@ -104,14 +109,14 @@ public class Debugger extends InputAdapter {
 				players.add(nextrandom);
 				break;
 			case Keys.G: // global
-				list.getGame().addGlobal(new Global("New global here", System.currentTimeMillis(), nextrandom.getServer().getRoom(), nextrandom.getName()));
+//				list.getGame().addGlobal(new Global("New global here", System.currentTimeMillis(), nextrandom.getServer().getRoom(), nextrandom.getName()));
 				break;
 			case Keys.ESCAPE:
 				Gdx.app.exit();
 				break;
 		}
 		
-		list.refresh(players);
+		refresh(players);
 		return false;
 	}
 

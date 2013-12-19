@@ -1,4 +1,4 @@
-package com.seroperson.mediator;
+package com.seroperson.mediator.refresh;
 
 import static com.seroperson.mediator.Mediator.getSettings;
 
@@ -12,22 +12,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
+import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.parsing.Parser;
-import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.tori.stuff.Global;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
-import com.seroperson.mediator.utils.ServerHandler;
 import com.seroperson.mediator.viewer.ServerViewer;
+import com.seroperson.mediator.viewer.ServerViewerContainer;
 
 public class Refresher extends ServerHandler {
 
 	private Socket socket;
+	private final ServerViewerContainer container;
 	private final URL forum;
 
-	public Refresher(final Mediator mediator, final OnlineList list) throws Throwable {
-		super(list, mediator);
+	public Refresher(final Mediator mediator, final RefreshHandler handler, ServerViewerContainer con) throws Throwable {
+		super(handler, mediator);
+		container = con;
 		forum = new URL(getSettings().getForumURI());
 	}
 
@@ -81,7 +83,7 @@ public class Refresher extends ServerHandler {
 
 	protected List<Player> getPlayersOnline(final Server[] servers) {
 		final Settings settings = getSettings();
-		final ServerViewer siv = getOnlineList().getServerViewer();
+		final ServerViewer siv = container.getServerViewer();
 		final List<Player> online = new ArrayList<Player>();
 		final List<String> clans = new ArrayList<String>(Arrays.asList(settings.getClans()));
 		final List<String> caught = new ArrayList<String>(Arrays.asList(settings.getNames()));

@@ -26,7 +26,7 @@ public class Settings {
 
 	private final float padLeft;
 	private final float padBottom;
-
+	
 	private final Boolean showlogo;
 	private final Boolean globals;
 	private final Boolean unminimizeonnewplayer;

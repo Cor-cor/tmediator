@@ -25,6 +25,8 @@ import com.badlogic.gdx.utils.FloatArray;
  * */
 
 public class SelectableLabel extends Label {
+	
+	public static final SelectableLabelGroup default_group = new SelectableLabelGroup();
 
 	private final Clipboard clipboard;
 	private final Drawable selection;
@@ -47,6 +49,10 @@ public class SelectableLabel extends Label {
 
 	public SelectableLabel (CharSequence text, Skin skin, String fontName, String colorName, SelectableLabelGroup group) {
 		this(text, new SelectableLabelStyle(skin.getFont(fontName), skin.getColor(colorName)), group);
+	}
+	
+	public SelectableLabel (CharSequence text, Skin skin) {
+		this(text, skin.get(SelectableLabelStyle.class), default_group);
 	}
 
 	public SelectableLabel (CharSequence text, Skin skin, SelectableLabelGroup group) {
