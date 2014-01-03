@@ -2,7 +2,9 @@ package com.seroperson.mediator.refresh;
 
 import static com.seroperson.mediator.Mediator.getSettings;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
@@ -27,13 +29,16 @@ public class Refresher extends ServerHandler {
 	private final ServerViewerContainer container;
 	private final URL forum;
 
-	public Refresher(final Mediator mediator, final RefreshHandler handler, ServerViewerContainer con) throws Throwable {
+	public Refresher(final Mediator mediator, final RefreshHandler handler, ServerViewerContainer con) throws MalformedURLException {
 		super(handler, mediator);
 		container = con;
 		forum = new URL(getSettings().getForumURI());
 	}
 
 	protected Global getGlobal() throws Throwable {
+		if(!Mediator.getSettings().isGlobalsTracking())
+			return null;
+		
 		final URLConnection connection = forum.openConnection();
 		connection.connect();
 		final Scanner reader = new Scanner(new InputStreamReader(connection.getInputStream()));
@@ -61,7 +66,7 @@ public class Refresher extends ServerHandler {
 		return Parser.getGlobal(builder.toString());
 	}
 
-	protected Server[] getServers() throws Throwable {
+	protected Server[] getServers() throws IOException {
 		socket = new Socket(getSettings().getServer(), getSettings().getPort());
 		
 		final Scanner reader = new Scanner(new InputStreamReader(socket.getInputStream()));
@@ -122,7 +127,7 @@ public class Refresher extends ServerHandler {
 					}
 				
 				if(handle(player, clans, online, caught))
-						online.add(player);
+					online.add(player);
 			}
 		}
 

@@ -11,7 +11,7 @@ public abstract class ChangeHandler {
 
 	private final Collection<Player> changequeue;
 	private final VisualList list;
-	private boolean started;
+	protected boolean started;
 
 	public ChangeHandler(final VisualList screen) {
 		changequeue = initList();

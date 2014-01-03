@@ -49,10 +49,7 @@ public abstract class ServerHandler extends TimerTask {
 		try {
 			
 			mediator.setServers(getServers());
-			handler.refresh(getPlayersOnline(mediator.getServers()));
-			
-			if(!Mediator.getSettings().isGlobalsTracking())
-				return;
+			handler.refresh(getPlayersOnline(Mediator.getServers()));
 			
 			final Global current = getGlobal();
 			
@@ -66,6 +63,7 @@ public abstract class ServerHandler extends TimerTask {
 		}
 		catch (final Throwable e) {
 			mediator.handleNetThrow(e);
+			e.printStackTrace();
 		}
 		
 	}

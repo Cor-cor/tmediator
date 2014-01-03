@@ -39,7 +39,7 @@ public class Sorter extends ChangeHandler {
 			return result == 0 ? -1 : result;
 		}
 	};
-	
+	public ObjectMap<Actor, Integer> initial = new ObjectMap<Actor, Integer>();
 	private boolean sort = false;
 
 	public Sorter(final VisualList list) {
@@ -47,14 +47,28 @@ public class Sorter extends ChangeHandler {
 	}
 
 	@Override
+	public void reset() { 
+		super.reset();
+		initial.clear();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
 	public boolean start() {
 		if(!super.start())
 			return isFinished();
 		
-//		if(sort)
+		if(sort) {
+			int index = 0;
+			System.out.println(getVisualList().getCells().size() +" "+getVisualList().getLabelMap().size());
+			for(Cell<Actor> c : getVisualList().getCells()) {
+				if(c.getWidget() != null) // TODO libgdx's bug
+					initial.put(c.getWidget(), index);
+				index++;
+			}
 			sort();
-		
-//		sort = false;
+			sort = false;
+		}
 		
 		return isFinished();
 	}
@@ -67,7 +81,7 @@ public class Sorter extends ChangeHandler {
 		this.sort = sort;
 	}
 	
-	public void sort() {
+	private void sort() {
 		
 		final Map<Player, Table> labels = getVisualList().getLabelMap();
 		
@@ -83,50 +97,59 @@ public class Sorter extends ChangeHandler {
 		final Iterator<Entry<Player, Table>> iterator = labels.entrySet().iterator();
 		while(iterator.hasNext()) {
 			final Entry<Player, Table> entry = iterator.next();
-			sorted.put(entry.getKey(), (int) ((tableHeight-entry.getValue().getY()-pad)/15));
+			sorted.put(entry.getKey(), (int) ((tableHeight-entry.getValue().getY()-pad*2f)/entry.getValue().getHeight()));
 		}
-		List<Player> counter = new ArrayList<Player>(needed);
-		replace(sorted.findKey(0, true), sorted, needed, counter);
+		
+		replace(0, sorted, needed);
+		
 	}
 		
 	public static Comparator<Player> getPlayerComparator() {
 		return playercomparator;
 	}
 	
-	private void replace(final Player player, final ObjectMap<Player, Integer> oldorder, final List<Player> neworder, final List<Player> counter) {
-		int cindex = oldorder.get(player);
-		int nindex = neworder.indexOf(player);
-		if(!counter.remove(player) || cindex == nindex) {
-			if(counter.size() != 0) 
-				replace(oldorder.findKey(cindex+1, true), oldorder, neworder, counter);
+	private void replace(int cindex, final ObjectMap<Player, Integer> oldorder, final List<Player> neworder) {
+		if(cindex == neworder.size())
 			return;
+		
+		Player cplayer = oldorder.findKey(cindex, true);
+		int nindex = neworder.indexOf(cplayer);
+		
+		if (nindex != cindex) {
+			Actor actor = getVisualList().getLabelMap().get(cplayer);	
+			push(cindex, nindex, actor, getVisualList().getLabelMap().get(oldorder.findKey(nindex, true)));
 		}
 		
-		Actor actor = getVisualList().getLabelMap().get(player);	
-		push(cindex, nindex, actor);
-		
-		Player next = oldorder.findKey(nindex, true);
-		setCell(getVisualList().getLabelMap().get(player), getVisualList().getCell(getVisualList().getLabelMap().get(next)));
-		replace(next, oldorder, neworder, counter);
+		replace(cindex+1, oldorder, neworder);
 		
 	}
 	
-	private void push(int cindex, int nindex, Actor actor) {  
-
-		float amount = 0;
+	private void push(int cindex, int nindex, final Actor actor, final Actor nactor) {  
+		
+		int multi = Math.abs(nindex-cindex);
+		float amount = actor.getHeight()*multi;
 		
 		if(cindex < nindex)
-			amount = -actor.getHeight()*(nindex-cindex);
-		else
-			if(cindex > nindex)
-				amount = actor.getHeight()*(cindex-nindex);
-		
-		actor.addAction(Actions.sequence(Actions.moveBy(0, amount, /*getVisualList().getSpeed()*/.5f, Mediator.getInterpolation())));
+			amount *= -1;
+				
+		actor.addAction(Actions.sequence(
+				Actions.moveBy(0, amount, /*getVisualList().getSpeed()*/.5f, Mediator.getInterpolation()),
+				Actions.run(new Runnable() { 
+					public void run() { 
+						setCell(actor, getCell(nactor));
+					}
+				})
+			)
+		);
 		
 	}
+	
+	@SuppressWarnings("unchecked")
+	private Cell<Actor> getCell (Actor widget) {
+		return getVisualList().getCells().get(initial.get(widget));
+	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void setCell(Actor actor, Cell cell) { 
+	private void setCell(Actor actor, Cell<Actor> cell) { 
 		cell.setWidget(actor);
 		cell.setWidgetHeight(actor.getHeight());
 		cell.setWidgetWidth(actor.getWidth());

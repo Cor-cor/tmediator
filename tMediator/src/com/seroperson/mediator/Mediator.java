@@ -30,20 +30,20 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 	private static final ObjectMap<String, TextureRegion> buttons = new ObjectMap<String, TextureRegion>();
 	private static Skin skin;
 	private static boolean minimized = false;
-	private static boolean debug;
 	private static boolean crashed;
 	private static Server[] servers;
 	private static Texture skinTexture;
 	private static Settings settings;
 	private final Timer timer;
+	private final String[] args;
 	private Global[] globals = new Global[5];
 
-	public Mediator() {
-		this(false);
+	public Mediator(String... args) {
+		this(false, args);
 	}
 
-	private Mediator(final boolean debug) {
-		Mediator.debug = debug;
+	private Mediator(final boolean debug, String... arg) {
+		args = arg;
 		timer = new Timer("Timer", true);
 		settings = SettingsLoader.getSettings(this);
 	}
@@ -58,7 +58,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 		Gdx.graphics.setVSync(false);
 
-		setScreen(/*settings.isShowingLogotype() ? new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), 2) : */Logotype.initList(this));
+		setScreen(settings.isShowingLogotype() ? new Logotype(this, new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2), 2) : Logotype.initList(this));
 	}
 
 	@Override
@@ -82,10 +82,6 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 
 	public static TextureRegion getRegion(final String name) {
 		return buttons.get(name);
-	}
-
-	public static boolean isDebug() {
-		return debug;
 	}
 
 	public static synchronized boolean isMinimized() {
@@ -136,6 +132,10 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return globals[index];
 	}
 
+	public String[] getArguments() { 
+		return args;
+	}
+			
 	public static Server[] getServers() {
 		return servers;
 	}
@@ -144,7 +144,7 @@ public class Mediator extends Game implements CaseListener, ThrowHandler {
 		return skin == null ? skin = new Skin(Gdx.files.internal("skin/skin.json")) : skin;
 	}
 	
-	public static void setServers(final Server[] servers) {
+	public void setServers(final Server[] servers) {
 		Mediator.servers = servers;
 	}
 

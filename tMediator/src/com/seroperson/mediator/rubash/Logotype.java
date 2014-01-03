@@ -11,13 +11,13 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.seroperson.mediator.Debugger;
 import com.seroperson.mediator.Mediator;
-import com.seroperson.mediator.refresh.ServerHandler;
 import com.seroperson.mediator.screen.MainScreen;
+import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.screen.ScreenAdapter;
 
 public class Logotype extends ScreenAdapter {
 
-	private State state = Mediator.isDebug() ? State.Out : State.In;
+	private State state =State.In;
 	private final TextureRegion textureregion;
 	private final SpriteBatch batch = new SpriteBatch();
 	private final Color color = new Color(batch.getColor());
@@ -38,6 +38,7 @@ public class Logotype extends ScreenAdapter {
 	@Override
 	public void render(final float delta) {
 		Gdx.gl10.glEnable(GL10.GL_BLEND);
+		
 		if(Gdx.input.isKeyPressed(Keys.ESCAPE)) {
 			state = State.Out;
 			color.a = 0;
@@ -81,11 +82,14 @@ public class Logotype extends ScreenAdapter {
 	}
 	
 	public static Screen initList(Mediator mediator) {
-		final MainScreen list = new Debugger(mediator);//new OnlineList(mediator);
+		MainScreen list = null;
+		for(String str : mediator.getArguments()) 
+			if(str.equals("-d") || str.equals("--debug"))
+				list = new Debugger(mediator);
+		if(list == null)
+			list = new OnlineList(mediator);
 		Gdx.input.setInputProcessor(list.getInputProcessor());
-		ServerHandler handler = list.getServerHandler();
-		if(handler != null)
-			mediator.getTimer().schedule(handler, 0, Mediator.getSettings().getPeriod());
+		list.initServerHandler();
 		return list;
 	}
 

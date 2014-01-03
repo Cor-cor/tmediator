@@ -24,13 +24,12 @@ public class Adder extends ChangeHandler {
 		for(final Player player : getList()) {
 			getVisualList().updatePlayer(player);
 			getVisualList().updateServer(player);
-			main.add(getVisualList().getLabelMap().get(player)).align(Align.left);
-			main.row();
+			main.add(getVisualList().getLabelMap().get(player)).align(Align.left).row();
 		}
 		
 		getList().clear();
 
-		return isFinished();
+		return false;
 	}
 
 	@Override

@@ -20,7 +20,6 @@ public abstract class BaseList extends Table {
 				Label label = initLabel();
 				handleCell(current.add(label));
 			}
-			add(current);
 		}
 		return labels.get(player);	
 	}

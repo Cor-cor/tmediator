@@ -8,6 +8,6 @@ public abstract class MainScreen extends ScreenAdapter {
 
 	public abstract InputProcessor getInputProcessor();
 	
-	public abstract ServerHandler getServerHandler();
+	public abstract ServerHandler initServerHandler();
 	
 }

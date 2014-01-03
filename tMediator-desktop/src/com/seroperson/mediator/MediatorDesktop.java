@@ -50,14 +50,14 @@ public class MediatorDesktop extends JFrame {
 	private final Point location = new Point();
 	private final Mediator mediator;
 	
-	public MediatorDesktop() { 
+	public MediatorDesktop(String... args) { 
 		super("tMediator");
 		final int w = 360/2;
 		final int h = 360/2;
 			
 		final TrayIcon tray = initTray();
 		
-		mediator = new com.seroperson.mediator.Mediator() {
+		mediator = new com.seroperson.mediator.Mediator(args) {
 			
 			@Override
 			public void unMinimize() { 
@@ -82,7 +82,6 @@ public class MediatorDesktop extends JFrame {
 				super.handleThrow(t);
 				getTimer().cancel();
 				MediatorDesktop.this.dispose();
-				
 				try {
 					new MediatorCrashReporter(t);
 				}
@@ -100,11 +99,11 @@ public class MediatorDesktop extends JFrame {
 		if(mediator.isCrashed())
 			return;
 		
-        setIconImage(icon);
+       setIconImage(icon);
 	    setExtendedState(Frame.NORMAL);
 	    setUndecorated(true);	 
 	    
-	    JComponent c = (JComponent)getContentPane();  
+	   JComponent c = (JComponent)getContentPane();  
 		LwjglAWTCanvas canvas = new LwjglAWTCanvas(mediator, false);
 		
 		Settings settings = Mediator.getSettings();
@@ -276,7 +275,7 @@ public class MediatorDesktop extends JFrame {
 	}
 		
 	public static void main(String[] a) { 
-		new MediatorDesktop();
+		new MediatorDesktop(a);
 	}
 	
 }

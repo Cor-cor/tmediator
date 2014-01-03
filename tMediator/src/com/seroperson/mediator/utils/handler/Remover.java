@@ -36,7 +36,19 @@ public class Remover extends ChangeHandler {
 				}
 			};
 
-			remLabels.addAction(Actions.sequence(Actions.fadeOut(/*getVisualList().getSpeed()*/.5f), Actions.run(runnable), Actions.removeActor()));
+			remLabels.addAction(Actions.sequence(
+					Actions.fadeOut(/*getVisualList().getSpeed()*/.5f), 
+					Actions.run(runnable), 
+					Actions.run(new Runnable() {
+
+						@Override
+						public void run() {
+							remLabels.remove();
+						} 
+				
+					})
+				)
+			);
 
 			final Iterator<Entry<Player, Table>> inner = getVisualList().getLabelMap().entrySet().iterator();
 

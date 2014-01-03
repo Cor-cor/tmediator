@@ -84,7 +84,7 @@ public class AnimatedList extends VisualList {
 	}
 
 	protected float getSpeed() {
-		return 0.5f; // TODO to settings ( also see OnlineList )
+		return 0.5f; // TODO to settings
 	}
 
 	@Override

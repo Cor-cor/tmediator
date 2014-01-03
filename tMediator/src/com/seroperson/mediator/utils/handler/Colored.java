@@ -10,7 +10,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.seroperson.mediator.screen.list.VisualList;
 import com.seroperson.mediator.tori.stuff.Player;
 
-
 public class Colored extends ChangeHandler {
 
 	public Colored(final VisualList screen) {
@@ -20,18 +19,18 @@ public class Colored extends ChangeHandler {
 	@Override
 	public boolean start() {
 		
-		System.out.println(getList().toString());
-
 		Iterator<Player> iterator = getList().iterator();
 		
-		while(iterator.hasNext()) { 
+		while(iterator.hasNext()) {  // TODO as actions
 			Player player = iterator.next();
 			Table table = getVisualList().getLabelMap().get(player);
-			System.out.println("Handling "+player.getName());
+			if(table == null) {
+				iterator.remove();
+				continue;
+			}
 			for(Actor actor : table.getChildren()) { 
-				System.out.println("Color: "+actor.getColor());
 				if(actor.getColor().g > 0)
-					actor.getColor().sub(0, 0.002f, 0, 0);
+					actor.getColor().sub(0, 0.0009f, 0, 0);
 				if(actor.getColor().g <= 0) {
 					actor.getColor().set(Color.BLACK);
 					iterator.remove();
@@ -42,7 +41,11 @@ public class Colored extends ChangeHandler {
 		
 		return isFinished();
 	}
-
+	
+	@Override 
+	public void reset() { 
+	}
+	
 	@Override
 	protected Collection<Player> initList() {
 		return new HashSet<Player>();

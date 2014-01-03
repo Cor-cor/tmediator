@@ -12,7 +12,6 @@ import javax.swing.SwingUtilities;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -24,7 +23,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.refresh.RefreshHandler;
@@ -32,7 +30,6 @@ import com.seroperson.mediator.refresh.Refresher;
 import com.seroperson.mediator.refresh.ServerHandler;
 import com.seroperson.mediator.screen.list.AnimatedList;
 import com.seroperson.mediator.tori.stuff.Player;
-import com.seroperson.mediator.utils.SelectableLabel;
 import com.seroperson.mediator.utils.handler.Adder;
 import com.seroperson.mediator.utils.handler.ChangeHandler;
 import com.seroperson.mediator.utils.handler.Colored;
@@ -45,11 +42,9 @@ import com.seroperson.mediator.viewer.ServerViewerContainer;
 public class OnlineList extends MainScreen implements RefreshHandler, ServerViewerContainer {
 
 	private final float speed = 0.5f; // TODO to settings
-	private final float colorSpeed = Mediator.isDebug() ? 1 : 0.15f;
 
+	protected final Mediator game;
 	private final Stage stage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-	private final Mediator game;
-	private final Array<SelectableLabel> colored = new Array<SelectableLabel>();
 	private int previousSortingFlag = -Integer.MAX_VALUE;
 	private ServerViewer serverviewer;
 
@@ -134,12 +129,11 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 		scrp.setScrollingDisabled(false, false);
 		scrp.setFillParent(true);
 		scrp.setFlickScroll(false);
-
+		
 		stage.addActor(scrp);
 		stage.addActor(bottomLeft);
 		stage.addActor(bottomRight);
-		stage.addActor(winbuttons);
-
+		stage.addActor(winbuttons);		
 	}
 
 	@Override
@@ -148,12 +142,15 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 	}
 	
 	@Override
-	public ServerHandler getServerHandler() {
+	public ServerHandler initServerHandler() {
 		Refresher r = null;
 		try {
 			r = new Refresher(game, this, this);
+			game.getTimer().schedule(r, 0, Mediator.getSettings().getPeriod());
 		}
-		catch(Throwable e) { }
+		catch(Throwable e) {
+			game.handleThrow(e);
+		}
 		return r;
 	}
 	
@@ -165,20 +162,17 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 	@Override
 	public synchronized void render(final float delta) {
 		
-		/* TODO as actions? */
 		if(state != handlers.length) {
 			while(state != handlers.length) {
-				if(handlers[state].start()) {
+				if(handlers[state].start()) 
 					state++;
-					list.layout();
-				}
 				else
 					break;
 			}
 		}
 		else {
 			try {
-				Thread.sleep(20);
+				Thread.sleep(20); // TODO to settings
 			}
 			catch (final InterruptedException e) {
 				game.handleThrow(e);
@@ -201,7 +195,6 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 
 	public synchronized void setAnimation(boolean a) { 
 		// set speed to 0;
-		
 	}
 	
 	public ServerViewer getServerViewer() {
@@ -276,18 +269,18 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 											@Override
 											public void run() {
 												game.minimize();
-											} // FIXME it really need here?
+											} // FIXME
 										});
 
 									}
 								};
 
-								game.getTimer().schedule(task, 10000);
+								game.getTimer().schedule(task, 10000); // TODO to settings
 
 							}
 					}
 					handlers[State.ADDING.getIndex()].add(player);
-					handlers[State.COLORING.getIndex()].add(player);
+					handlers[State.COLOR.getIndex()].add(player);
 					break;
 			}
 			i++;
@@ -330,7 +323,7 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 	
 	private enum State {
 
-		REMOVING(0), UPDATING(1), ADDING(2), COLORING(3), SORTING(4);
+		REMOVING(0), UPDATING(1), ADDING(2), COLOR(3), SORTING(4);
 
 		int index;
 
