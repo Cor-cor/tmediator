@@ -67,6 +67,7 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 			public void changed(final ChangeEvent event, final Actor actor) {
 				game.minimize();
 			}
+			
 		});
 
 		final Button close = new Button(getSkin());
@@ -77,6 +78,7 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 			public void changed(final ChangeEvent event, final Actor actor) {
 				Gdx.app.exit();
 			}
+			
 		});
 
 		final TextureRegion rightR = Mediator.getRegion("back");

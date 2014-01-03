@@ -15,19 +15,6 @@ public abstract class VisualList extends BaseList {
 		return updateLabel(player, Type.PLAYER, player.getNameWithClanTag());
 	}
 	
-	/*@Override
-	public void invalidate() {
-		super.invalidate();
-		for(int index = 0; index < getCells().size();) { 
-			Cell<?> cell = getCells().get(index);
-			if(cell.getWidget() == null) {
-				getCells().remove(index);
-				continue;
-			}
-			index++;
-		}
-	}*/
-	
 	public abstract boolean isInAction();
 	
 	protected abstract Label updateLabel(final Player player, final Type index, final String text);

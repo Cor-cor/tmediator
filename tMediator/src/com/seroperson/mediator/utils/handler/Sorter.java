@@ -60,7 +60,6 @@ public class Sorter extends ChangeHandler {
 		
 		if(sort) {
 			int index = 0;
-			System.out.println(getVisualList().getCells().size() +" "+getVisualList().getLabelMap().size());
 			for(Cell<Actor> c : getVisualList().getCells()) {
 				if(c.getWidget() != null) // TODO libgdx's bug
 					initial.put(c.getWidget(), index);

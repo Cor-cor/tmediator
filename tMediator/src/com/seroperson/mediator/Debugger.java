@@ -38,7 +38,7 @@ public class Debugger extends OnlineList {
 		final String room = rooms[randomizer.nextInt(rooms.length)];
 		final Player newplayer = new Player(name, clan, new Server("", room, "", null, null, 0), new char[] { '[', ']' });
 		
-		if(handler.getQueuePlayers().contains(newplayer))	// TODO filter like a Refresher
+		if(handler.getQueuePlayers().contains(newplayer))
 			return getRandomPlayer();
 		
 		return newplayer;
