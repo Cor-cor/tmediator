@@ -24,7 +24,7 @@ public class ServerInputListener extends InputListener {
 				ServerViewer viewer = container.getServerViewer();
 				if(viewer == null)
 					container.setServerViewer(viewer = new ServerViewer(container)); // TODO remove
-				final Server s = Mediator.getServerByRoom(player.getServer().getRoom(), Mediator.getServers());
+				final Server s = Mediator.getMediator().getServerByRoom(player.getServer().getRoom());
 				if(s != null)
 					viewer.add(s, s.getRoom(), true);
 			}

@@ -1,8 +1,5 @@
 package com.seroperson.mediator.screen;
 
-import static com.seroperson.mediator.Mediator.getSettings;
-import static com.seroperson.mediator.Mediator.getSkin;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
@@ -21,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.IntMap;
@@ -29,6 +27,7 @@ import com.seroperson.mediator.refresh.RefreshHandler;
 import com.seroperson.mediator.refresh.Refresher;
 import com.seroperson.mediator.refresh.ServerHandler;
 import com.seroperson.mediator.screen.list.AnimatedList;
+import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.utils.handler.Adder;
 import com.seroperson.mediator.utils.handler.ChangeHandler;
@@ -43,24 +42,23 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 
 	private final float speed = 0.5f; // TODO to settings
 
-	protected final Mediator game;
-	private final Stage stage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-	private int previousSortingFlag = -Integer.MAX_VALUE;
 	private ServerViewer serverviewer;
-
+	private final Stage stage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 	private final AnimatedList list = new AnimatedList(this);
-	
 	private final Sorter sorter = new Sorter(list);
 	private final ChangeHandler[] handlers = new ChangeHandler[] { new Remover(list), new Updater(list), new Adder(list), new Colored(list), sorter };
+	private final Mediator game = Mediator.getMediator();
+	private final Settings settings = game.getSettings();
 	private int state = handlers.length;
+	private int previousSortingFlag = Integer.MIN_VALUE;
 	
-	public OnlineList(final Mediator game) {
-		this.game = game;
+	public OnlineList() {
 		
-		final ScrollPane scrp = new ScrollPane(list, getSkin());
+		final Skin skin = game.getSkin();
+		final ScrollPane scrp = new ScrollPane(list, skin);
 
-		final Button toTray = new Button(getSkin());
-		toTray.add(new Image(Mediator.getRegion("minimize")));
+		final Button toTray = new Button(skin);
+		toTray.add(new Image(game.getRegion("minimize")));
 		toTray.addListener(new ChangeListener() {
 
 			@Override
@@ -70,8 +68,8 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 			
 		});
 
-		final Button close = new Button(getSkin());
-		close.add(new Image(Mediator.getRegion("close")));
+		final Button close = new Button(skin);
+		close.add(new Image(game.getRegion("close")));
 		close.addListener(new ChangeListener() {
 
 			@Override
@@ -81,11 +79,11 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 			
 		});
 
-		final TextureRegion rightR = Mediator.getRegion("back");
-		final TextureRegion leftR = new TextureRegion(Mediator.getRegion("back"));
+		final TextureRegion rightR = game.getRegion("back");
+		final TextureRegion leftR = new TextureRegion(game.getRegion("back"));
 		leftR.flip(true, false);
 
-		final Button right = new Button(getSkin());
+		final Button right = new Button(skin);
 		right.add(new Image(rightR));
 		right.addListener(new ChangeListener() {
 
@@ -96,7 +94,7 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 
 		});
 
-		final Button left = new Button(getSkin());
+		final Button left = new Button(skin);
 		left.add(new Image(leftR));
 		left.addListener(new ChangeListener() {
 
@@ -116,8 +114,8 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 		bottomLeft.bottom().right();
 		bottomLeft.setName("Bottom left");
 		bottomRight.bottom().left();
-		bottomRight.add(right).padLeft(getSettings().getPadLeft() / 2).padBottom(getSettings().getPadBottom() / 2);
-		bottomLeft.add(left).padRight(getSettings().getPadLeft() / 2).padBottom(getSettings().getPadBottom() / 2);
+		bottomRight.add(right).padLeft(settings.getPadLeft() / 2).padBottom(settings.getPadBottom() / 2);
+		bottomLeft.add(left).padRight(settings.getPadLeft() / 2).padBottom(settings.getPadBottom() / 2);
 		bottomRight.addListener(getFadeTableListener(bottomRight));
 		bottomLeft.addListener(getFadeTableListener(bottomLeft));
 		bottomRight.setName("Bottom right");
@@ -147,8 +145,8 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 	public ServerHandler initServerHandler() {
 		Refresher r = null;
 		try {
-			r = new Refresher(game, this, this);
-			game.getTimer().schedule(r, 0, Mediator.getSettings().getPeriod());
+			r = new Refresher(this, this);
+			game.getTimer().schedule(r, 0, settings.getPeriod());
 		}
 		catch(Throwable e) {
 			game.handleThrow(e);
@@ -183,7 +181,7 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 		
 		stage.act(delta);
 		
-		if(Mediator.isMinimized())
+		if(game.isMinimized())
 			return;		
 		
 		stage.draw();
@@ -219,9 +217,9 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 		boolean mark = false;
 		int i = 0;
 
-		sorter.setSort(!(previousSortingFlag == getSettings().getSortingType()));
+		sorter.setSort(!(previousSortingFlag == settings.getSortingType()));
 
-		previousSortingFlag = getSettings().getSortingType();
+		previousSortingFlag = settings.getSortingType();
 		
 		for(final Player player : toList) {
 			int index = -1;
@@ -237,7 +235,7 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 			}
 			cases[i++] = index;
 			if(index == -1) {
-				if(getSettings().getSortingType() < 3)
+				if(settings.getSortingType() < 3)
 					sorter.setSort(true);
 			}
 		}
@@ -252,9 +250,8 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 				case -1:
 					if(!mark) {
 						mark = true;
-						if(getSettings().isMinimizeAction())
-							if(Mediator.isMinimized()) {
-
+						if(settings.isMinimizeAction())
+							if(game.isMinimized()) {
 								SwingUtilities.invokeLater(new Runnable() {
 
 									@Override
@@ -278,7 +275,6 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 								};
 
 								game.getTimer().schedule(task, 10000); // TODO to settings
-
 							}
 					}
 					handlers[State.ADDING.getIndex()].add(player);
@@ -338,6 +334,5 @@ public class OnlineList extends MainScreen implements RefreshHandler, ServerView
 		}
 
 	}
-
 	
 }

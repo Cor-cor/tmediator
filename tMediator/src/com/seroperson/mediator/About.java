@@ -39,9 +39,9 @@ public class About extends JFrame {
 		"tMediator",
 		new StringBuilder("Java version ").append(System.getProperty("java.version")).toString(),
 		"Distributed under GNU General Public License",
-		"Visit github repository",
-		"Visit author page",
-		"Official thread on forum.toribash.com",
+		"Visit the github repository",
+		"Visit the author's page",
+		"Official thread at forum.toribash.com",
 		"Report an error" };
 	
 	private final static ImageIcon im = new ImageIcon(About.class.getResource("/skin/logotype_small.png"));

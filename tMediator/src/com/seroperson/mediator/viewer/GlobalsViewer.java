@@ -59,7 +59,7 @@ public class GlobalsViewer extends JFrame {
 				final int realColumnIndex = table.convertColumnIndexToModel(colIndex);
 				if(realColumnIndex == 2) {
 					final String room = (String) table.getValueAt(rowIndex, colIndex);
-					final Server server = Mediator.getServerByRoom(room, Mediator.getServers());
+					final Server server = Mediator.getMediator().getServerByRoom(room);
 					if(server == null) {
 						JOptionPane.showMessageDialog(getContentPane(), "Server not found");
 						return;

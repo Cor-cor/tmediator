@@ -22,13 +22,9 @@ public class Debugger extends OnlineList {
 	private final Random randomizer = new Random();
 	private DebugRefresher handler;
 	
-	public Debugger(Mediator game) {
-		super(game);
-	}
-
 	@Override
 	public ServerHandler initServerHandler() {
-		handler = new DebugRefresher(this, game);
+		handler = new DebugRefresher(this);
 		return handler;
 	}
 	
@@ -59,6 +55,7 @@ public class Debugger extends OnlineList {
 		ArrayList<Player> players = handler.getQueuePlayers();
 		
 		final Player nextrandom = getRandomPlayer();
+		final Mediator game = Mediator.getMediator();
 		
 		if(keycode > 243 && keycode < 255)
 			for(int i = 243; i < keycode; i++) {

@@ -2,16 +2,13 @@ package com.seroperson.mediator.rubash;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.seroperson.mediator.Debugger;
 import com.seroperson.mediator.Mediator;
-import com.seroperson.mediator.screen.MainScreen;
 import com.seroperson.mediator.screen.OnlineList;
 import com.seroperson.mediator.screen.ScreenAdapter;
 
@@ -67,7 +64,7 @@ public class Logotype extends ScreenAdapter {
 			case Out: {
 				color.a -= outSpeed;
 				if(color.a  <= 0) {
-					mediator.setScreen(initList(mediator));
+					mediator.setScreen(new OnlineList());
 					dispose();
 					return;
 				}
@@ -81,18 +78,6 @@ public class Logotype extends ScreenAdapter {
 		batch.end();
 	}
 	
-	public static Screen initList(Mediator mediator) {
-		MainScreen list = null;
-		for(String str : mediator.getArguments()) 
-			if(str.equals("-d") || str.equals("--debug"))
-				list = new Debugger(mediator);
-		if(list == null)
-			list = new OnlineList(mediator);
-		Gdx.input.setInputProcessor(list.getInputProcessor());
-		list.initServerHandler();
-		return list;
-	}
-
 	@Override
 	public void dispose() {
 		batch.dispose();

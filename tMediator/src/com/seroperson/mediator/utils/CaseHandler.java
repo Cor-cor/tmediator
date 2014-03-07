@@ -2,7 +2,7 @@ package com.seroperson.mediator.utils;
 
 import com.seroperson.mediator.tori.stuff.Global;
 
-public interface CaseListener {
+public interface CaseHandler {
 
 	public void unMinimize();
 

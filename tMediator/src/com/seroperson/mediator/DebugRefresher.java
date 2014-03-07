@@ -17,8 +17,8 @@ public class DebugRefresher extends ServerHandler {
 	private final ArrayList<Player> queue_players = new ArrayList<Player>();
 	private final ArrayList<Server> queue_servers = new ArrayList<Server>();
 
-	protected DebugRefresher(RefreshHandler handler, Mediator mediator) {
-		super(handler, mediator);
+	protected DebugRefresher(RefreshHandler handler) {
+		super(handler);
 	}
 
 	@Override

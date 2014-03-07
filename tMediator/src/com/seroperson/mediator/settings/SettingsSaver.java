@@ -54,7 +54,7 @@ public class SettingsSaver extends JFrame {
 		setSize(w, h);
 		setLocation(d.width / 2 - getSize().width / 2, d.height / 2 - getSize().height / 2);
 
-		final Settings current = Mediator.getSettings();
+		final Settings current = Mediator.getMediator().getSettings();
 
 		globals = current.isGlobalsTracking();
 		minimizeAct = current.isMinimizeAction();
@@ -225,7 +225,8 @@ public class SettingsSaver extends JFrame {
 	}
 
 	private void save() {
-		final Settings current = Mediator.getSettings();
+		final Mediator mediator = Mediator.getMediator();
+		final Settings current = mediator.getSettings();
 		final List<String> clans = fillArray(this.clans);
 		final List<String> players = fillArray(this.players);
 		final SettingsDef def = new SettingsDef();
@@ -251,7 +252,7 @@ public class SettingsSaver extends JFrame {
 		catch (final IOException e) {
 			e.printStackTrace(); // TODO handle
 		}
-		Mediator.setSettings(settings);
+		mediator.setSettings(settings);
 	}
 
 }

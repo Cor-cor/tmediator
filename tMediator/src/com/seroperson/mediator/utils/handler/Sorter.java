@@ -1,7 +1,5 @@
 package com.seroperson.mediator.utils.handler;
 
-import static com.seroperson.mediator.Mediator.getSettings;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,7 +23,7 @@ public class Sorter extends ChangeHandler {
 		@Override
 		public int compare(final Player o1, final Player o2) {
 			int result = 1;
-			switch(getSettings().getSortingType()) {
+			switch(Mediator.getMediator().getSettings().getSortingType()) {
 				case 0:
 					result = o1.getNameForSorting().compareToIgnoreCase(o2.getNameForSorting());
 					break;
@@ -92,7 +90,7 @@ public class Sorter extends ChangeHandler {
 		Collections.sort(needed, getPlayerComparator());
 		
 		final float tableHeight = getVisualList().getHeight();
-		final float pad = getSettings().getPadBottom()*2;
+		final float pad = Mediator.getMediator().getSettings().getPadBottom()*2;
 		final Iterator<Entry<Player, Table>> iterator = labels.entrySet().iterator();
 		while(iterator.hasNext()) {
 			final Entry<Player, Table> entry = iterator.next();
@@ -132,7 +130,7 @@ public class Sorter extends ChangeHandler {
 			amount *= -1;
 				
 		actor.addAction(Actions.sequence(
-				Actions.moveBy(0, amount, /*getVisualList().getSpeed()*/.5f, Mediator.getInterpolation()),
+				Actions.moveBy(0, amount, /*getVisualList().getSpeed()*/.5f, Mediator.getMediator().getInterpolation()),
 				Actions.run(new Runnable() { 
 					public void run() { 
 						setCell(actor, getCell(nactor));

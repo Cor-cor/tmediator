@@ -1,7 +1,5 @@
 package com.seroperson.mediator.refresh;
 
-import static com.seroperson.mediator.Mediator.getSettings;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -29,14 +27,14 @@ public class Refresher extends ServerHandler {
 	private final ServerViewerContainer container;
 	private final URL forum;
 
-	public Refresher(final Mediator mediator, final RefreshHandler handler, ServerViewerContainer con) throws MalformedURLException {
-		super(handler, mediator);
+	public Refresher(final RefreshHandler handler, ServerViewerContainer con) throws MalformedURLException {
+		super(handler);
 		container = con;
-		forum = new URL(getSettings().getForumURI());
+		forum = new URL(Mediator.getMediator().getSettings().getForumURI());
 	}
 
 	protected Global getGlobal() throws Throwable {
-		if(!Mediator.getSettings().isGlobalsTracking())
+		if(!Mediator.getMediator().getSettings().isGlobalsTracking())
 			return null;
 		
 		final URLConnection connection = forum.openConnection();
@@ -67,7 +65,9 @@ public class Refresher extends ServerHandler {
 	}
 
 	protected Server[] getServers() throws IOException {
-		socket = new Socket(getSettings().getServer(), getSettings().getPort());
+		final Mediator mediator = Mediator.getMediator();
+		final Settings settings = mediator.getSettings();
+		socket = new Socket(settings.getServer(), settings.getPort());
 		
 		final Scanner reader = new Scanner(new InputStreamReader(socket.getInputStream()));
 		final StringBuilder builder = new StringBuilder();
@@ -83,11 +83,11 @@ public class Refresher extends ServerHandler {
 			reader.close();
 		}
 
-		return Parser.getServers(getMediator(), builder.toString());
+		return Parser.getServers(mediator, builder.toString());
 	}
 
 	protected List<Player> getPlayersOnline(final Server[] servers) {
-		final Settings settings = getSettings();
+		final Settings settings = Mediator.getMediator().getSettings();
 		final ServerViewer siv = container.getServerViewer();
 		final List<Player> online = new ArrayList<Player>();
 		final List<String> clans = new ArrayList<String>(Arrays.asList(settings.getClans()));
@@ -145,4 +145,22 @@ public class Refresher extends ServerHandler {
 		return online;
 	}
 
+	private boolean handle(final Player p, final List<String> clans, final Collection<Player> alreadyChecked, final List<String> wanted) {
+		if(alreadyChecked.contains(p))
+			return false;
+		for(int index = 0; index < wanted.size(); index++) {
+			String wname = wanted.get(index);
+			if(wname.equalsIgnoreCase(p.getName())) { 
+				wanted.remove(index);
+				return true;
+			}
+		}
+		if(p.getClan().equals(Parser.CNONE))
+			return false;
+		for(final String clan : clans)
+			if(clan.equalsIgnoreCase(p.getClan()))
+				return true;
+		return false;
+	}
+	
 }

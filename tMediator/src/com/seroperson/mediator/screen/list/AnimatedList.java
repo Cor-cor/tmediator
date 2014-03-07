@@ -1,7 +1,5 @@
 package com.seroperson.mediator.screen.list;
 
-import static com.seroperson.mediator.Mediator.getSettings;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.seroperson.mediator.Mediator;
 import com.seroperson.mediator.screen.ServerInputListener;
+import com.seroperson.mediator.settings.Settings;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.utils.SelectableLabel;
 import com.seroperson.mediator.viewer.ServerViewerContainer;
@@ -27,10 +26,11 @@ public class AnimatedList extends VisualList {
 	
 	public AnimatedList(ServerViewerContainer container) { 
 		this.container = container;
-		padLeft(getSettings().getPadLeft());
-		padTop(getSettings().getPadBottom());
-		padRight(getSettings().getPadLeft());
-		padBottom(getSettings().getPadBottom());
+		final Settings settings = Mediator.getMediator().getSettings();
+		padLeft(settings.getPadLeft());
+		padTop(settings.getPadBottom());
+		padRight(settings.getPadLeft());
+		padBottom(settings.getPadBottom());
 		align(Align.left);
 		left().top();
 	}
@@ -77,7 +77,7 @@ public class AnimatedList extends VisualList {
 	
 	@Override
 	protected Label initLabel() {
-		Label label = new SelectableLabel("", Mediator.getSkin());
+		Label label = new SelectableLabel("", Mediator.getMediator().getSkin());
 		label.setColor(Color.BLACK);
 		label.getColor().g = .7f;
 		return label;

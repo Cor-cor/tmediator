@@ -58,7 +58,7 @@ public class Remover extends ChangeHandler {
 				if(getList().contains(entry.getKey()))
 					continue;
 				if(labels.getY() < remLabels.getY())
-					labels.addAction(Actions.moveBy(0, labels.getHeight(), /*getVisualList().getSpeed()*/.5f, Mediator.getInterpolation()));
+					labels.addAction(Actions.moveBy(0, labels.getHeight(), /*getVisualList().getSpeed()*/.5f, Mediator.getMediator().getInterpolation()));
 			}
 		}
 
