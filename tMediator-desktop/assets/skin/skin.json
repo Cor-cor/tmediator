@@ -1,22 +1,13 @@
 {
 com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: canada.fnt } },
 com.badlogic.gdx.graphics.Color: {
-	green: { a: 1.0, b: 0.0, g: 1.0, r: 0.0 },
-	white: { a: 1.0, b: 1.0, g: 1.0, r: 1.0 },
-	red: { a: 1.0, b: 0.0, g: 0.0, r: 1.0 },
-	black: { a: 1.0, b: 0.0, g: 0.0, r: 0.0 }
-},
-com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
-	dialogDim: { name: white, color: { r: 0.0, g: 0.0, b: 0.0, a: 0.45 } }
+	white: { a: 1.0, b: 1.0, g: 1.0, r: 1.0 }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 	default: { },
 },
 com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 	default: {  }
-},
-com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
-	
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: selection, font: default-font, fontColor: white }

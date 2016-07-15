@@ -116,7 +116,9 @@ public class Parser {
 				currentStr = st.nextToken();
 				CLIENTS: {
 					final Pattern pattern = Pattern.compile(REGEXP_CLIENT);
-					final Matcher matcher = pattern.matcher(currentStr.split(";")[1]);
+					String[] stringTokens = currentStr.split(";");
+					String playersList = stringTokens.length > 1 ? stringTokens[1] : ""; 
+					final Matcher matcher = pattern.matcher(playersList);
 					players = new ArrayList<Player>(5);
 					while(matcher.find()) {
 						final String withclantag = matcher.group(0).trim();
@@ -146,10 +148,14 @@ public class Parser {
 						mod = "classic";
 						break NEWGAME;
 					}
+					/*if (currentStr.contains(" beginnerlobby ")) {
+						mod = "classic";
+						break NEWGAME;
+					}*/
 					final Pattern pattern = Pattern.compile(REGEXP_MOD);
 					final Matcher matcher = pattern.matcher(currentStr);
 					matcher.find();
-					mod = matcher.group().trim();
+					mod = "classic";//matcher.group().trim();
 				}
 
 				if(st.hasMoreTokens())

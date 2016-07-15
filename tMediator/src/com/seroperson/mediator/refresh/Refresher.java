@@ -39,9 +39,9 @@ public class Refresher extends ServerHandler {
 		
 		final URLConnection connection = forum.openConnection();
 		connection.connect();
-		final Scanner reader = new Scanner(new InputStreamReader(connection.getInputStream()));
+		//final Scanner reader = new Scanner(new InputStreamReader(connection.getInputStream()));
 		final StringBuilder builder = new StringBuilder();
-		try {
+		/*try {
 			while(reader.hasNextLine()) {
 				final String str = reader.nextLine();
 				if(str.contains("<!-- latest ingame broadcast -->")) {
@@ -59,8 +59,8 @@ public class Refresher extends ServerHandler {
 		}
 		finally {
 			reader.close();
-		}
-
+		}*/
+		builder.append("No globals");
 		return Parser.getGlobal(builder.toString());
 	}
 

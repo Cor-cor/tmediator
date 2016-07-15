@@ -34,7 +34,7 @@ public class Logotype extends ScreenAdapter {
 
 	@Override
 	public void render(final float delta) {
-		Gdx.gl10.glEnable(GL10.GL_BLEND);
+		Gdx.gl.glEnable(GL10.GL_BLEND);
 		
 		if(Gdx.input.isKeyPressed(Keys.ESCAPE)) {
 			state = State.Out;
