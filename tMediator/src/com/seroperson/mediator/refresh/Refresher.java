@@ -25,42 +25,33 @@ public class Refresher extends ServerHandler {
 
 	private Socket socket;
 	private final ServerViewerContainer container;
-	private final URL forum;
+	private final URL broadcasts;
 
 	public Refresher(final RefreshHandler handler, ServerViewerContainer con) throws MalformedURLException {
 		super(handler);
 		container = con;
-		forum = new URL(Mediator.getMediator().getSettings().getForumURI());
+		broadcasts = new URL(Mediator.getMediator().getSettings().getBroadcastURL());
 	}
 
 	protected Global getGlobal() throws Throwable {
 		if(!Mediator.getMediator().getSettings().isGlobalsTracking())
 			return null;
 		
-		final URLConnection connection = forum.openConnection();
+		final URLConnection connection = broadcasts.openConnection();
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64)");
 		connection.connect();
-		//final Scanner reader = new Scanner(new InputStreamReader(connection.getInputStream()));
+		//ToDo: check server response
+		final Scanner reader = new Scanner(new InputStreamReader(connection.getInputStream()));
 		final StringBuilder builder = new StringBuilder();
-		/*try {
-			while(reader.hasNextLine()) {
-				final String str = reader.nextLine();
-				if(str.contains("<!-- latest ingame broadcast -->")) {
-					while(true) {
-						final String string = reader.nextLine();
-						if(string.contains("<!-- / latest ingame broadcast -->"))
-							break;
-						builder.append(string);
-					}
-					break;
-				}
-				if(str.contains("<!-- nav buttons bar -->")) // too late
-					break;
-			}
+		try {
+			builder.append(reader.nextLine());
+		}
+		catch (Exception ex) {
+			System.err.println(ex.getMessage());
 		}
 		finally {
 			reader.close();
-		}*/
-		builder.append("No globals");
+		}
 		return Parser.getGlobal(builder.toString());
 	}
 

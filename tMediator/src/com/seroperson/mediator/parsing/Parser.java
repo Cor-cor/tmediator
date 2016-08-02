@@ -1,35 +1,29 @@
 package com.seroperson.mediator.parsing;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import com.seroperson.mediator.tori.stuff.Global;
-import com.seroperson.mediator.tori.stuff.Player;
-import com.seroperson.mediator.tori.stuff.Server;
+import com.seroperson.mediator.tori.stuff.*;
 import com.seroperson.mediator.utils.ThrowHandler;
 
 public class Parser {
 
-	private final static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	private final static String TORIBASH = "TORIBASH";
 	private final static String REGEXP_SERVER = "([\\d{1,3}\\.]+):(\\d{1,})\\s(\\p{ASCII}+)";
 	private final static String REGEXP_CLIENT = "[^\\s]+\\w"; 
 	private final static String REGEXP_MOD = "[^\\s]+\\.tbm";
 	private final static String REGEXP_COLORS = "\\^\\d{2}+";
+	private final static String REGEXP_JOIN_CMD = "[\\\\\\/][jJ][oO]\\s(\\w+)";
 	private final static char[][] limiters = new char[][] { new char[] { '[', ']' }, new char[] { '(', ')' } };
+	private static String prevGlobal = "";
 	public final static String CNONE = "none";
 
 	public static Server[] getServers(final ThrowHandler th, final String npservers) {
@@ -52,36 +46,24 @@ public class Parser {
 	}
 
 	public static Global getGlobal(String npglobal) throws Throwable {
-		if(!npglobal.contains("latest_broadcast")) 
+		//ToDo: probly there is more elegant solution but I'm dumb and lazy
+		if (npglobal.equals(prevGlobal))
 			return null;
-
-		/* message may contain incorrect attribute for xml :c */
-		npglobal = npglobal.replaceAll("~<a href=\"member.php\\?u=\\d{0,9}\">+\\p{ASCII}+", "</div>");
-
-		final long date;
-		final DocumentBuilder docbuilder = factory.newDocumentBuilder();
-		final InputStream stream = new ByteArrayInputStream(npglobal.getBytes());
-		final String message;
-		final String player;
-		final String server;
-		final Document doc;
-
-		try {
-			doc = docbuilder.parse(stream);
-		}
-		finally {
-			stream.close();
-		}
-
-		final NodeList div = doc.getElementsByTagName("div");
-		final Node node = div.item(0);
-
-		message = node.getTextContent().trim();
-		player = node.getAttributes().getNamedItem("data-username").getTextContent().trim();
-		server = node.getAttributes().getNamedItem("data-room").getTextContent().trim();
-		date = System.currentTimeMillis();
+		prevGlobal = npglobal;
 		
-		return new Global(message, date, server, player);
+		final GsonBuilder gsonb = new GsonBuilder();
+		gsonb.registerTypeAdapter(Date.class, new DateDeserializer());
+		final Gson gson = gsonb.create();
+		
+		final Broadcast bc = gson.fromJson(npglobal, Broadcast.class);
+		final BroadcastedMessage global = bc.broadcasts[0];
+		final Matcher roomMatcher = Pattern.compile(REGEXP_JOIN_CMD).matcher(global.message);
+		final String room;
+		if (roomMatcher.find())
+			room = roomMatcher.group(1);
+		else
+			room = "unknown room";
+		return new Global(global.message.trim().replaceAll(REGEXP_COLORS, ""), global.post_time.getTime(), room, global.username);
 	}
 
 	@SuppressWarnings("unused")
@@ -148,14 +130,12 @@ public class Parser {
 						mod = "classic";
 						break NEWGAME;
 					}
-					/*if (currentStr.contains(" beginnerlobby ")) {
-						mod = "classic";
-						break NEWGAME;
-					}*/
 					final Pattern pattern = Pattern.compile(REGEXP_MOD);
 					final Matcher matcher = pattern.matcher(currentStr);
-					matcher.find();
-					mod = "classic";//matcher.group().trim();
+					if (matcher.find())
+						mod = matcher.group().trim();
+					else
+						mod = "undefined mod";
 				}
 
 				if(st.hasMoreTokens())

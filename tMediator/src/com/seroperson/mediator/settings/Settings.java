@@ -9,6 +9,7 @@ public class Settings {
 	static {
 		final SettingsDef def = new SettingsDef();
 		def.rooms = new String[1];
+		//ToDo: should definitely update this :)
 		def.names = new String[] { "hampa", "nirs", "korvin", "slipanc" };
 		def.clans = new String[] { "Aliens", "Impro", "Imba", "Abyss" };
 		defaultsettings = new Settings(def);
@@ -18,7 +19,7 @@ public class Settings {
 	private final int port;
 	private final int sort;
 	private final String server;
-	private final String forum_uri;
+	private final String broadcast_url;
 
 	private final String[] names;
 	private final String[] clans;
@@ -38,7 +39,7 @@ public class Settings {
 		period = defaultsettings.period;
 		port = defaultsettings.port;
 		sort = defaultsettings.sort;
-		forum_uri = defaultsettings.forum_uri;
+		broadcast_url = defaultsettings.broadcast_url;
 		server = defaultsettings.server;
 		names = defaultsettings.names;
 		clans = defaultsettings.clans;
@@ -63,7 +64,7 @@ public class Settings {
 		padLeft = def.padLeft;
 		padBottom = def.padBottom;
 		globals = def.globals == null ? defaultsettings.globals : def.globals;
-		forum_uri = def.uri == null ? defaultsettings.forum_uri : def.uri;
+		broadcast_url = def.broadcastURL == null ? defaultsettings.broadcast_url : def.broadcastURL;
 		showlogo = def.showlogo == null ? defaultsettings.showlogo : def.showlogo;
 		unminimizeonnewplayer = def.unminimizeonnewplayer == null ? defaultsettings.unminimizeonnewplayer : def.unminimizeonnewplayer;
 		round = def.round == null ? defaultsettings.round : def.round;
@@ -86,8 +87,8 @@ public class Settings {
 		return server;
 	}
 
-	public String getForumURI() {
-		return forum_uri;
+	public String getBroadcastURL() {
+		return broadcast_url;
 	}
 
 	public String[] getRooms() { 

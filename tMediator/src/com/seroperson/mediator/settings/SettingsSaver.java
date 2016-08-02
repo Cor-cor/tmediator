@@ -242,7 +242,7 @@ public class SettingsSaver extends JFrame {
 		def.port = current.getPort();
 		def.rooms = current.getRooms();
 		def.sort = sort;
-		def.uri = current.getForumURI();
+		def.broadcastURL = current.getBroadcastURL();
 		def.round = current.getShapeSettings();
 		def.position = current.getPosition();
 		final Settings settings = new Settings(def);

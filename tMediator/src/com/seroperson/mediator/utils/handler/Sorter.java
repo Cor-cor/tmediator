@@ -124,7 +124,7 @@ public class Sorter extends ChangeHandler {
 	private void push(int cindex, int nindex, final Actor actor, final Actor nactor) {  
 		
 		int multi = Math.abs(nindex-cindex);
-		float amount = actor.getHeight()*multi;
+		float amount = actor.getHeight()*multi; //ToDo: investigate why does it throw a NullPointerException
 		
 		if(cindex < nindex)
 			amount *= -1;
