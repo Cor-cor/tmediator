@@ -3,10 +3,14 @@ package com.seroperson.mediator;
 import java.awt.Frame;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 
 import com.seroperson.mediator.tori.stuff.Global;
+import com.seroperson.mediator.tori.stuff.Server;
+import com.seroperson.mediator.utils.Connector;
 
 public class MediatorDesktop extends Mediator {
 	
@@ -50,7 +54,22 @@ public class MediatorDesktop extends Mediator {
 	
 	@Override
 	public void handleGlobal(Global g) { 
-		tray.displayMessage(new StringBuilder("tMediator | Ingame broadcast by ").append(g.getPlayer()).toString(), g.getMessage(), MessageType.INFO);
+		final Server server = getServerByRoom(g.getServer());
+		if (server != null)
+		{
+			tray.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						Connector.connectToServer(server);
+					}
+					catch (Exception ex) {
+						System.err.println(ex.getMessage());
+					}
+				}
+			});
+			tray.displayMessage(new StringBuilder("tMediator | Ingame broadcast by ").append(g.getPlayer()).toString(), g.getMessage(), MessageType.INFO);	
+		}
 	}
 
 }

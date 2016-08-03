@@ -18,6 +18,7 @@ public class Global {
 		return message;
 	}
 
+	//ToDo: what about returning a Server and not a String?
 	public String getServer() {
 		return server;
 	}

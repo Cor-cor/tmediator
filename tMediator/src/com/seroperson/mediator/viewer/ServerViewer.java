@@ -1,9 +1,6 @@
 package com.seroperson.mediator.viewer;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -11,15 +8,7 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -28,6 +17,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Values;
 import com.seroperson.mediator.tori.stuff.Player;
 import com.seroperson.mediator.tori.stuff.Server;
+import com.seroperson.mediator.utils.Connector;
 
 public class ServerViewer extends JFrame {
 
@@ -49,9 +39,9 @@ public class ServerViewer extends JFrame {
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setVisible(true);
-		setResizable(false);
-		setLocation(d.width / 2-480/2/2, d.height / 2-480/2/2);
-		setSize(480 / 2, 480 / 2);
+		setResizable(true);
+		setLocation(d.width / 2-480/2/2, d.height / 2-640/2/2);
+		setSize(480 / 2, 640 / 2);
 		addWindowListener(getWindowListener());
 
 		final Container c = getContentPane();
@@ -88,6 +78,8 @@ public class ServerViewer extends JFrame {
 		jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT, infoPanel, jsps);
 		jsp.setContinuousLayout(false);
 
+		JPanel p = new JPanel(new BorderLayout());
+		
 		final JButton close = new JButton("Close");
 		close.addActionListener(new ActionListener() {
 
@@ -110,9 +102,24 @@ public class ServerViewer extends JFrame {
 			
 		});
 
+		final JButton connect = new JButton("Connect");
+		connect.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Server server = servers.get(indexmap.get(tabbedpane.getSelectedIndex()));
+				if (server.getPlayers().length > 0)
+				{
+					Connector.connectToServer(server);
+				}
+			}
+		});
+
+		p.add(connect, BorderLayout.NORTH);
+		p.add(close, BorderLayout.SOUTH);		
 		c.add(jsp, BorderLayout.CENTER);
 		c.add(tabbedpane, BorderLayout.NORTH);
-		c.add(close, BorderLayout.SOUTH);
+		c.add(p, BorderLayout.SOUTH);
 
 	}
 
